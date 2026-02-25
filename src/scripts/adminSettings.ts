@@ -7,7 +7,7 @@ import {
 } from "@/scripts/adminAuth";
 
 const LOGO_MAX_BYTES = 1_000_000;
-const HERO_VIDEO_MAX_BYTES = 4_500_000;
+const HERO_VIDEO_MAX_BYTES = 10 * 1024 * 1024;
 
 function byId<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
@@ -346,7 +346,7 @@ function bindLandingMediaForm(config: SiteConfig): void {
     }
 
     if (videoFile.size > HERO_VIDEO_MAX_BYTES) {
-      setFeedback(feedback, "Video is too large for browser storage. Keep it under 4.5MB.", "error");
+      setFeedback(feedback, "Video is too large for browser storage. Keep it under 10MB.", "error");
       return;
     }
 

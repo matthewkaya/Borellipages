@@ -426,9 +426,26 @@ export async function initServicePage(serviceKey: ServiceKey): Promise<void> {
 
 export async function initContactPage(): Promise<void> {
   const config = await loadRuntimeConfig();
+  const phone = config.brand.phone.trim();
+  const email = config.brand.email.trim();
 
   setText("contact-headline", config.contactPage.headline);
   setText("contact-intro", config.contactPage.intro);
   setText("contact-privacy", config.contactPage.privacyNote);
+  setText("contact-direct-service-area", config.brand.serviceArea);
+  setText("contact-direct-address", config.brand.address);
+
+  const phoneLink = byId<HTMLAnchorElement>("contact-direct-phone");
+  if (phoneLink) {
+    phoneLink.href = `tel:${phone}`;
+    phoneLink.textContent = phone;
+  }
+
+  const emailLink = byId<HTMLAnchorElement>("contact-direct-email");
+  if (emailLink) {
+    emailLink.href = `mailto:${email}`;
+    emailLink.textContent = email;
+  }
+
   showContactSuccess(config);
 }

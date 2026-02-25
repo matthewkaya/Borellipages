@@ -26,15 +26,31 @@ const config = getDefaultConfig();
           <ul class="mt-3 space-y-2 text-sm text-slate">
             <li>
               <span class="font-semibold text-ink">Phone:</span>
-              <a href={`tel:${config.brand.phone}`} class="ml-1 underline underline-offset-2">{config.brand.phone}</a>
+              <a
+                id="contact-direct-phone"
+                href={`tel:${config.brand.phone}`}
+                class="ml-1 underline underline-offset-2"
+              >
+                {config.brand.phone}
+              </a>
             </li>
             <li>
               <span class="font-semibold text-ink">Email:</span>
-              <a href={`mailto:${config.brand.email}`} class="ml-1 underline underline-offset-2">{config.brand.email}</a>
+              <a
+                id="contact-direct-email"
+                href={`mailto:${config.brand.email}`}
+                class="ml-1 underline underline-offset-2"
+              >
+                {config.brand.email}
+              </a>
             </li>
             <li>
               <span class="font-semibold text-ink">Service Area:</span>
-              <span class="ml-1">{config.brand.serviceArea}</span>
+              <span id="contact-direct-service-area" class="ml-1">{config.brand.serviceArea}</span>
+            </li>
+            <li>
+              <span class="font-semibold text-ink">Address:</span>
+              <span id="contact-direct-address" class="ml-1">{config.brand.address}</span>
             </li>
           </ul>
         </div>
