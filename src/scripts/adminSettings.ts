@@ -7,7 +7,7 @@ import {
 } from "@/scripts/adminAuth";
 
 const LOGO_MAX_BYTES = 1_000_000;
-const HERO_VIDEO_MAX_BYTES = 10 * 1024 * 1024;
+const HERO_VIDEO_MAX_BYTES = 5_500_000;
 const HERO_VIDEO_ASSET_ENDPOINT = "/.netlify/functions/site-assets?asset=home-hero-video";
 let businessSaveTimer: number | null = null;
 
@@ -25,6 +25,27 @@ function setFeedback(node: HTMLElement | null, message: string, tone: "ok" | "er
     tone === "ok"
       ? "rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
       : "rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700";
+}
+
+async function getResponseErrorMessage(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as { error?: string };
+    if (payload?.error && payload.error.trim()) {
+      return payload.error.trim();
+    }
+  } catch {
+    // Ignore parse errors and use status-based fallback below.
+  }
+
+  if (response.status === 413) {
+    return "Video payload is too large for server upload. Netlify Functions request size is limited, so use a smaller file.";
+  }
+
+  if (response.status >= 500) {
+    return "Server error while uploading video.";
+  }
+
+  return `Upload failed with status ${response.status}.`;
 }
 
 async function persistGlobalConfig(
@@ -436,7 +457,7 @@ function bindLandingMediaForm(config: SiteConfig): void {
     });
 
     if (!response.ok) {
-      throw new Error(`Upload failed (${response.status})`);
+      throw new Error(await getResponseErrorMessage(response));
     }
 
     return `${HERO_VIDEO_ASSET_ENDPOINT}&v=${Date.now()}`;
@@ -448,7 +469,7 @@ function bindLandingMediaForm(config: SiteConfig): void {
     });
 
     if (!response.ok) {
-      throw new Error(`Delete failed (${response.status})`);
+      throw new Error(await getResponseErrorMessage(response));
     }
   };
 
@@ -464,7 +485,7 @@ function bindLandingMediaForm(config: SiteConfig): void {
     }
 
     if (videoFile.size > HERO_VIDEO_MAX_BYTES) {
-      setFeedback(feedback, "Video is too large. Keep it under 10MB.", "error");
+      setFeedback(feedback, "Video is too large for Netlify upload. Keep it under 5.5MB.", "error");
       return;
     }
 
@@ -486,10 +507,11 @@ function bindLandingMediaForm(config: SiteConfig): void {
         await renderLandingVideoPreview(config);
         fileInput.value = "";
       }
-    } catch {
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Unknown upload error.";
       setFeedback(
         feedback,
-        "Could not upload hero video to the server. Check connection and try again.",
+        `Could not upload hero video to the server. ${detail}`,
         "error"
       );
     }
@@ -509,10 +531,11 @@ function bindLandingMediaForm(config: SiteConfig): void {
         await renderLandingVideoPreview(config);
         fileInput.value = "";
       }
-    } catch {
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Unknown delete error.";
       setFeedback(
         feedback,
-        "Could not remove hero video from the server. Check connection and try again.",
+        `Could not remove hero video from the server. ${detail}`,
         "error"
       );
     }

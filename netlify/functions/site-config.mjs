@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { connectLambda, getStore } from "@netlify/blobs";
 
 const STORE_NAME = "borrelli-site-config";
 const CONFIG_KEY = "site-config.json";
@@ -11,8 +11,6 @@ const json = (statusCode, payload) => ({
   },
   body: JSON.stringify(payload)
 });
-
-const store = getStore(STORE_NAME);
 
 function parseConfigText(raw) {
   if (!raw) {
@@ -33,6 +31,9 @@ function parseConfigText(raw) {
 
 export const handler = async (event) => {
   try {
+    connectLambda(event);
+    const store = getStore(STORE_NAME);
+
     switch (event.httpMethod) {
       case "GET": {
         const raw = await store.get(CONFIG_KEY, { type: "text" });

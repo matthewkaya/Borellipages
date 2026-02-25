@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { connectLambda, getStore } from "@netlify/blobs";
 
 const STORE_NAME = "borrelli-site-assets";
 const ASSET_KEYS = {
@@ -13,8 +13,6 @@ const json = (statusCode, payload) => ({
   },
   body: JSON.stringify(payload)
 });
-
-const store = getStore(STORE_NAME);
 
 function getHeader(headers, name) {
   if (!headers) {
@@ -50,6 +48,9 @@ function resolveAssetKey(event) {
 
 export const handler = async (event) => {
   try {
+    connectLambda(event);
+    const store = getStore(STORE_NAME);
+
     const resolved = resolveAssetKey(event);
     if (!resolved) {
       return json(400, { error: "Invalid or missing asset id." });
