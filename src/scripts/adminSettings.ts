@@ -1,4 +1,4 @@
-import { loadRuntimeConfig, saveRuntimeConfig } from "@/lib/config";
+import { getDefaultConfig, loadRuntimeConfig, saveRuntimeConfig } from "@/lib/config";
 import { MEDIA_INDEX } from "@/lib/mediaIndex";
 import { folderMatchesPattern } from "@/lib/mediaSelect";
 import type { SiteConfig } from "@/lib/types";
@@ -25,7 +25,9 @@ function setFeedback(node: HTMLElement | null, message: string, tone: "ok" | "er
 }
 
 function getHeroVideoId(config: SiteConfig): string {
-  const heroPinned = config.mediaSections.homeHero.pinned;
+  const heroPinned = Array.isArray(config.mediaSections.homeHero?.pinned)
+    ? config.mediaSections.homeHero.pinned
+    : [];
   const videoId = heroPinned.find((id) => {
     const asset = MEDIA_INDEX.find((item) => item.id === id);
     return asset?.type === "video";
@@ -246,10 +248,66 @@ function bindLandingMediaForm(config: SiteConfig): void {
   });
 }
 
+function normalizeSettingsConfig(config: SiteConfig): boolean {
+  const defaults = getDefaultConfig();
+  let changed = false;
+
+  if (!config.brand.name.trim()) {
+    config.brand.name = defaults.brand.name;
+    changed = true;
+  }
+
+  const hasLogoObject =
+    typeof config.brand.logo === "object" &&
+    config.brand.logo !== null &&
+    "src" in config.brand.logo &&
+    "alt" in config.brand.logo;
+
+  if (!hasLogoObject) {
+    config.brand.logo = { ...defaults.brand.logo };
+    changed = true;
+  }
+
+  if (!config.brand.logo.alt.trim()) {
+    config.brand.logo.alt = `${config.brand.name} logo`;
+    changed = true;
+  }
+
+  if (!config.mediaSections.homeHero) {
+    config.mediaSections.homeHero = { ...defaults.mediaSections.homeHero };
+    changed = true;
+  }
+
+  if (!Array.isArray(config.mediaSections.homeHero.sources)) {
+    config.mediaSections.homeHero.sources = [...defaults.mediaSections.homeHero.sources];
+    changed = true;
+  }
+
+  if (!Array.isArray(config.mediaSections.homeHero.pinned)) {
+    config.mediaSections.homeHero.pinned = [...defaults.mediaSections.homeHero.pinned];
+    changed = true;
+  }
+
+  if (typeof config.mediaSections.homeHero.includeVideos !== "boolean") {
+    config.mediaSections.homeHero.includeVideos = defaults.mediaSections.homeHero.includeVideos;
+    changed = true;
+  }
+
+  if (typeof config.mediaSections.homeHero.maxItems !== "number") {
+    config.mediaSections.homeHero.maxItems = defaults.mediaSections.homeHero.maxItems;
+    changed = true;
+  }
+
+  return changed;
+}
+
 export async function initAdminSettings(): Promise<void> {
   requireAdminAuth();
 
   const config = await loadRuntimeConfig();
+  if (normalizeSettingsConfig(config)) {
+    saveRuntimeConfig(config);
+  }
 
   bindPasswordForm();
   populateLogoForm(config);
