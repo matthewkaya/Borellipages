@@ -18,12 +18,21 @@ export interface MediaAsset {
 }
 
 const imageModules = import.meta.glob<{ default: ImageMetadata }>(
-  "/src/assets/media/**/*.{jpg,jpeg,png,webp,avif}",
+  [
+    "/src/assets/media/**/*.[jJ][pP][gG]",
+    "/src/assets/media/**/*.[jJ][pP][eE][gG]",
+    "/src/assets/media/**/*.[pP][nN][gG]",
+    "/src/assets/media/**/*.[wW][eE][bB][pP]",
+    "/src/assets/media/**/*.[aA][vV][iI][fF]"
+  ],
   { eager: true }
 );
 
 const videoModules = import.meta.glob<{ default: string }>(
-  "/src/assets/media/**/*.{mp4,webm}",
+  [
+    "/src/assets/media/**/*.[mM][pP]4",
+    "/src/assets/media/**/*.[wW][eE][bB][mM]"
+  ],
   { eager: true }
 );
 

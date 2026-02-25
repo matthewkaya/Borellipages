@@ -8,6 +8,7 @@ export default defineConfig({
   integrations: [tailwind()],
   scopedStyleStrategy: "where",
   vite: {
+    assetsInclude: ["**/*.[mM][pP]4", "**/*.[wW][eE][bB][mM]"],
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url))
