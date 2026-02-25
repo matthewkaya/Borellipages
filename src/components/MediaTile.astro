@@ -1,0 +1,47 @@
+---
+import type { MediaAsset } from "@/lib/mediaIndex";
+
+interface Props {
+  asset: MediaAsset;
+  altText?: string;
+  eager?: boolean;
+  label?: string;
+  className?: string;
+}
+
+const { asset, altText, eager = false, label, className = "" } = Astro.props as Props;
+const resolvedAlt = altText?.trim() || asset.alt;
+const loading = eager ? "eager" : "lazy";
+---
+
+<figure class={`media-tile ${className}`}>
+  {
+    asset.type === "image" ? (
+      <img
+        src={asset.src}
+        alt={resolvedAlt}
+        width={asset.width}
+        height={asset.height}
+        loading={loading}
+        decoding="async"
+      />
+    ) : (
+      <video
+        src={asset.src}
+        aria-label={resolvedAlt}
+        preload={eager ? "metadata" : "none"}
+        controls
+        playsinline
+      ></video>
+    )
+  }
+
+  {
+    label ? (
+      <figcaption class="absolute bottom-0 left-0 right-0 px-3 py-2 text-xs font-medium text-white">
+        <span class="media-scrim" aria-hidden="true"></span>
+        <span class="relative z-10">{label}</span>
+      </figcaption>
+    ) : null
+  }
+</figure>

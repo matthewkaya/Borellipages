@@ -1,0 +1,158 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import MediaTile from "@/components/MediaTile.astro";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider.astro";
+import { getDefaultConfig } from "@/lib/config";
+import { MEDIA_INDEX } from "@/lib/mediaIndex";
+import {
+  buildBeforeAfterPairs,
+  resolveAlt,
+  selectSectionAssets
+} from "@/lib/mediaSelect";
+import type { ServiceKey } from "@/lib/types";
+
+export function getStaticPaths() {
+  return [
+    { params: { slug: "custom-home-builds" } },
+    { params: { slug: "renovations-expansions" } },
+    { params: { slug: "sustainable-craftsmanship" } }
+  ];
+}
+
+const config = getDefaultConfig();
+const slug = Astro.params.slug as ServiceKey;
+const validSlugs: ServiceKey[] = [
+  "custom-home-builds",
+  "renovations-expansions",
+  "sustainable-craftsmanship"
+];
+
+if (!validSlugs.includes(slug)) {
+  return Astro.redirect("/");
+}
+
+const service = config.services[slug];
+
+const sectionKeyBySlug: Record<ServiceKey, keyof typeof config.mediaSections> = {
+  "custom-home-builds": "serviceCustomHomeBuilds",
+  "renovations-expansions": "serviceRenovationsExpansions",
+  "sustainable-craftsmanship": "serviceSustainableCraftsmanship"
+};
+
+const galleryAssets = selectSectionAssets(MEDIA_INDEX, config.mediaSections[sectionKeyBySlug[slug]]);
+const beforeAfterAssets = selectSectionAssets(MEDIA_INDEX, config.mediaSections.beforeAfterSlider);
+const beforeAfterPairs = buildBeforeAfterPairs(beforeAfterAssets);
+
+const pageTitle = `${service.name} | Borrelli Crafters`;
+const pageDescription = service.shortPitch;
+const path = `/services/${slug}`;
+---
+
+<BaseLayout title={pageTitle} description={pageDescription} config={config} currentPath={path}>
+  <section class="section-shell pt-12">
+    <p class="badge">Service Detail</p>
+    <h1 id="service-title" class="mt-4 text-4xl font-semibold text-ink md:text-5xl">{service.name}</h1>
+    <p id="service-short-pitch" class="mt-4 max-w-3xl text-base leading-relaxed text-slate md:text-lg">
+      {service.shortPitch}
+    </p>
+
+    <div class="mt-7 flex flex-wrap gap-3">
+      <a href="/book" class="btn-primary">Book a Consultation</a>
+      <a href="/#featured-projects" class="btn-secondary">View Projects</a>
+    </div>
+  </section>
+
+  <section class="section-shell mt-14">
+    <h2 class="text-2xl font-semibold text-ink">How We Deliver This Service</h2>
+    <div id="service-intro" class="mt-4 grid gap-4 md:grid-cols-2">
+      {
+        service.intro.map((paragraph) => (
+          <p class="text-sm leading-relaxed text-slate">{paragraph}</p>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section-shell mt-12">
+    <h2 class="text-2xl font-semibold text-ink">Is This the Right Fit?</h2>
+    <div class="mt-4 grid gap-4 md:grid-cols-2">
+      <article class="surface-card rounded-2xl p-5">
+        <h3 class="text-lg font-semibold text-pine">Who It&apos;s For</h3>
+        <ul id="service-who-for" class="mt-3 space-y-2 text-sm text-slate">
+          {
+            service.whoFor.map((item) => (
+              <li class="flex gap-2"><span aria-hidden="true">•</span><span>{item}</span></li>
+            ))
+          }
+        </ul>
+      </article>
+
+      <article class="surface-card rounded-2xl p-5">
+        <h3 class="text-lg font-semibold text-brand">Who It&apos;s Not For</h3>
+        <ul id="service-who-not-for" class="mt-3 space-y-2 text-sm text-slate">
+          {
+            service.whoNotFor.map((item) => (
+              <li class="flex gap-2"><span aria-hidden="true">•</span><span>{item}</span></li>
+            ))
+          }
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section-shell mt-12">
+    <div class="mb-4 flex items-center justify-between gap-4">
+      <h2 class="text-2xl font-semibold text-ink">Proof Gallery</h2>
+      <a href="/book" class="text-sm font-semibold text-brand underline underline-offset-4">Book a Consultation</a>
+    </div>
+
+    <div id="service-gallery" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        galleryAssets.length > 0 ? (
+          galleryAssets.map((asset) => (
+            <MediaTile asset={asset} altText={resolveAlt(asset, config.altOverrides)} className="min-h-[12rem]" />
+          ))
+        ) : (
+          <p class="rounded-xl border border-dashed border-ink/25 bg-white px-4 py-6 text-sm text-slate sm:col-span-2 lg:col-span-3">
+            Add service media to the configured folders. The gallery updates automatically.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    slug === "renovations-expansions" ? (
+      <section class="section-shell mt-12">
+        <BeforeAfterSlider pairs={beforeAfterPairs} altOverrides={config.altOverrides} />
+      </section>
+    ) : null
+  }
+
+  <section class="section-shell mt-12 pb-16">
+    <h2 class="text-2xl font-semibold text-ink">FAQ</h2>
+    <div id="service-faq" class="mt-4 space-y-3">
+      {
+        service.faq.map((item, index) => (
+          <details class="surface-card rounded-xl p-4" open={index === 0}>
+            <summary class="cursor-pointer text-sm font-semibold text-ink">{item.question}</summary>
+            <p class="mt-3 text-sm leading-relaxed text-slate">{item.answer}</p>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+
+  <a
+    href="/book"
+    class="fixed bottom-4 left-1/2 z-40 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-full bg-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-lg md:hidden"
+  >
+    Book a Consultation
+  </a>
+
+  <script type="module">
+    import { initServicePage } from "@/scripts/siteRuntime";
+
+    initServicePage({JSON.stringify(slug)});
+  </script>
+</BaseLayout>

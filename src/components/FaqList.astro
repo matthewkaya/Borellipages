@@ -1,0 +1,19 @@
+---
+import type { FaqItem } from "@/lib/types";
+
+const { items } = Astro.props as { items: FaqItem[] };
+---
+
+<section aria-labelledby="faq-heading" class="space-y-4">
+  <h2 id="faq-heading" class="text-2xl font-semibold text-ink">FAQ</h2>
+  <div class="space-y-3">
+    {
+      items.map((item, index) => (
+        <details class="surface-card rounded-xl p-4" open={index === 0}>
+          <summary class="cursor-pointer text-sm font-semibold text-ink">{item.question}</summary>
+          <p class="mt-3 text-sm leading-relaxed text-slate">{item.answer}</p>
+        </details>
+      ))
+    }
+  </div>
+</section>

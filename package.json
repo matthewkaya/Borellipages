@@ -1,0 +1,24 @@
+{
+  "name": "borrelli-crafters-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync-config": "node scripts/generate-site-config.mjs",
+    "dev": "npm run sync-config && astro dev",
+    "build": "npm run sync-config && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^5.1.2",
+    "astro": "^4.16.18",
+    "autoprefixer": "^10.4.20",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}

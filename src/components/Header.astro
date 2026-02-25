@@ -1,0 +1,83 @@
+---
+const { currentPath = "/" } = Astro.props;
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/services/custom-home-builds", label: "Services" },
+  { href: "/book", label: "Book / Contact" }
+];
+
+const isActive = (href: string) =>
+  href === "/" ? currentPath === "/" : currentPath.startsWith(href);
+---
+
+<header class="sticky top-0 z-50 border-b border-ink/10 bg-white/88 backdrop-blur">
+  <div class="section-shell flex items-center justify-between py-4">
+    <a
+      href="/"
+      class="font-display text-xl font-semibold tracking-tight text-ink"
+      aria-label="Borrelli Crafters home"
+    >
+      Borrelli Crafters
+    </a>
+
+    <nav aria-label="Primary" class="hidden items-center gap-8 md:flex">
+      {
+        links.map((link) => (
+          <a
+            href={link.href}
+            class={`text-sm font-medium transition hover:text-brand ${
+              isActive(link.href) ? "text-brand" : "text-ink"
+            }`}
+            aria-current={isActive(link.href) ? "page" : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <a href="/book" class="btn-primary">Book a Consultation</a>
+    </nav>
+
+    <button
+      id="mobile-menu-button"
+      class="inline-flex items-center rounded-lg border border-ink/20 px-3 py-2 text-sm font-medium text-ink md:hidden"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      type="button"
+    >
+      Menu
+    </button>
+  </div>
+
+  <div id="mobile-menu" class="hidden border-t border-ink/10 bg-white md:hidden">
+    <nav class="section-shell flex flex-col gap-2 py-4" aria-label="Mobile">
+      {
+        links.map((link) => (
+          <a
+            href={link.href}
+            class={`rounded-md px-2 py-2 text-sm font-medium ${
+              isActive(link.href) ? "bg-brand/10 text-brand" : "text-ink"
+            }`}
+            aria-current={isActive(link.href) ? "page" : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <a href="/book" class="btn-primary mt-2 text-center">Book a Consultation</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const button = document.getElementById("mobile-menu-button");
+  const menu = document.getElementById("mobile-menu");
+
+  if (button && menu) {
+    button.addEventListener("click", () => {
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!expanded));
+      menu.classList.toggle("hidden", expanded);
+    });
+  }
+</script>

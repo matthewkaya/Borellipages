@@ -1,0 +1,46 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Admin Settings | Borrelli Crafters">
+  <section class="mx-auto max-w-2xl space-y-6 rounded-2xl border border-ink/10 bg-white p-8 shadow-soft">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-3xl font-semibold text-ink">Admin Settings</h1>
+      <div class="flex gap-2">
+        <a href="/admin" class="btn-secondary">Back to Designer</a>
+        <button id="admin-logout" type="button" class="btn-secondary">Logout</button>
+      </div>
+    </div>
+
+    <p class="text-sm text-slate">Change the Designer password. The hash is stored in localStorage.</p>
+
+    <form id="admin-password-form" class="space-y-4" novalidate>
+      <div>
+        <label for="old-password" class="mb-1 block text-sm font-medium text-ink">Current Password</label>
+        <input id="old-password" type="password" class="field" autocomplete="current-password" required />
+      </div>
+
+      <div>
+        <label for="new-password" class="mb-1 block text-sm font-medium text-ink">New Password</label>
+        <input id="new-password" type="password" class="field" autocomplete="new-password" required />
+      </div>
+
+      <div>
+        <label for="confirm-password" class="mb-1 block text-sm font-medium text-ink">Confirm New Password</label>
+        <input id="confirm-password" type="password" class="field" autocomplete="new-password" required />
+      </div>
+
+      <p id="password-feedback" class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700" aria-live="polite">
+        Ready.
+      </p>
+
+      <button type="submit" class="btn-primary">Update Password</button>
+    </form>
+  </section>
+
+  <script type="module">
+    import { initAdminSettings } from "@/scripts/adminSettings";
+
+    initAdminSettings();
+  </script>
+</AdminLayout>

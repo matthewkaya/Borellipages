@@ -1,0 +1,272 @@
+{
+  "brand": {
+    "name": "Borrelli Crafters",
+    "tagline": "Custom homes, thoughtful renovations, and precision craft.",
+    "phone": "TODO: Add phone from borrellicrafters.com",
+    "email": "TODO: Add email from borrellicrafters.com",
+    "address": "TODO: Add street address from borrellicrafters.com",
+    "serviceArea": "TODO: Add service area from borrellicrafters.com",
+    "socials": {
+      "instagram": "https://www.instagram.com/borrelli_crafters/?hl=en",
+      "facebook": "https://www.facebook.com/profile.php?id=100089108874375",
+      "linkedin": "https://www.linkedin.com/in/borrellicrafters/"
+    }
+  },
+  "seo": {
+    "defaultTitle": "Borrelli Crafters | Premium Homes and Renovations",
+    "defaultDescription": "Borrelli Crafters designs and builds premium custom homes, renovations, and outdoor spaces with disciplined craftsmanship.",
+    "ogImage": "/og-default.svg"
+  },
+  "home": {
+    "hero": {
+      "headline": "Premium homes and renovations built with precision.",
+      "subheadline": "Borrelli Crafters delivers custom homes, major renovations, and outdoor projects with clear planning and reliable execution.",
+      "primaryCtaLabel": "Book a Consultation",
+      "secondaryCtaLabel": "View Projects",
+      "trustSignals": [
+        "Licensed and insured team",
+        "Transparent timelines and scope",
+        "Craft-led quality control"
+      ]
+    },
+    "services": [
+      {
+        "id": "custom-home-builds",
+        "title": "Custom Home Builds",
+        "blurb": "From lot strategy to final handover, built for families who want long-term quality.",
+        "href": "/services/custom-home-builds"
+      },
+      {
+        "id": "renovations-expansions",
+        "title": "Renovations & Expansions",
+        "blurb": "Rework key spaces, improve flow, and add square footage without compromising character.",
+        "href": "/services/renovations-expansions"
+      },
+      {
+        "id": "sustainable-craftsmanship",
+        "title": "Sustainable Craftsmanship",
+        "blurb": "Material-first decisions and durable detailing that reduce waste and improve long-term performance.",
+        "href": "/services/sustainable-craftsmanship"
+      }
+    ],
+    "testimonials": [
+      {
+        "quote": "The planning process was clear from day one. We always knew what was next and why.",
+        "name": "Client Placeholder",
+        "role": "Custom Home Project"
+      },
+      {
+        "quote": "Our renovation felt controlled, organized, and respectful of our home while we lived in it.",
+        "name": "Client Placeholder",
+        "role": "Whole Home Renovation"
+      },
+      {
+        "quote": "The craftsmanship is obvious in every room. Nothing feels rushed or generic.",
+        "name": "Client Placeholder",
+        "role": "Interior and Exterior Upgrade"
+      }
+    ],
+    "processSteps": [
+      {
+        "title": "1. Discovery",
+        "description": "We clarify goals, constraints, budget range, and site realities before design begins."
+      },
+      {
+        "title": "2. Design + Scope",
+        "description": "Plans, finishes, and project scope are aligned before construction starts."
+      },
+      {
+        "title": "3. Build",
+        "description": "Execution is managed with disciplined sequencing, quality checks, and clear communication."
+      },
+      {
+        "title": "4. Handover",
+        "description": "Final walkthrough, close-out details, and support after project completion."
+      }
+    ],
+    "conversionBand": {
+      "headline": "Ready to discuss your project?",
+      "body": "Tell us what you are planning and we will map the next step.",
+      "ctaLabel": "Book a Consultation"
+    }
+  },
+  "services": {
+    "custom-home-builds": {
+      "slug": "custom-home-builds",
+      "name": "Custom Home Builds",
+      "shortPitch": "Ground-up homes designed for long-term living, delivered with disciplined project control.",
+      "intro": [
+        "We build custom homes for clients who want a high-performing home, not a rushed build.",
+        "Our process aligns design intent, budget guardrails, and build quality before construction starts.",
+        "You get one team accountable for execution, communication, and finish-level consistency."
+      ],
+      "whoFor": [
+        "Homeowners building a long-term primary residence",
+        "Clients who value detailed planning before construction",
+        "Projects with high expectations for finish and durability"
+      ],
+      "whoNotFor": [
+        "Fast-turn speculative builds",
+        "Clients seeking lowest-price-only procurement",
+        "Projects without design or budget alignment"
+      ],
+      "faq": [
+        {
+          "question": "How early should we engage your team?",
+          "answer": "As early as possible. Early engagement helps avoid redesign and scope drift."
+        },
+        {
+          "question": "Do you provide fixed timelines?",
+          "answer": "We provide milestone-based timelines with updates as selections and approvals are finalized."
+        },
+        {
+          "question": "Can you collaborate with our architect?",
+          "answer": "Yes. We regularly coordinate with client-led architects and consultants."
+        }
+      ]
+    },
+    "renovations-expansions": {
+      "slug": "renovations-expansions",
+      "name": "Renovations & Expansions",
+      "shortPitch": "Strategic renovations and additions that improve daily use while protecting home value.",
+      "intro": [
+        "We renovate and expand homes where layout, storage, and circulation no longer support daily life.",
+        "Every scope starts with clear priorities so cost goes to the right places.",
+        "Our team coordinates sequencing to reduce disruption and keep work moving."
+      ],
+      "whoFor": [
+        "Families staying in their current home long-term",
+        "Projects that need structural and layout improvements",
+        "Owners who want staged, realistic decision checkpoints"
+      ],
+      "whoNotFor": [
+        "Cosmetic-only refreshes with no scope planning",
+        "Projects requiring immediate completion with no lead time",
+        "Budgets without contingency for hidden conditions"
+      ],
+      "faq": [
+        {
+          "question": "Can we remain in the home during construction?",
+          "answer": "Often yes, depending on scope. We define safe work zones and phased access up front."
+        },
+        {
+          "question": "How do you handle unforeseen conditions?",
+          "answer": "We document findings quickly, present options, and confirm decisions before proceeding."
+        },
+        {
+          "question": "Do you manage permit coordination?",
+          "answer": "Yes. We support documentation and schedule alignment with required approvals."
+        }
+      ]
+    },
+    "sustainable-craftsmanship": {
+      "slug": "sustainable-craftsmanship",
+      "name": "Sustainable Craftsmanship",
+      "shortPitch": "Low-waste methods and durable material choices for healthier, long-life homes.",
+      "intro": [
+        "Sustainability for us means practical long-term performance, not trend language.",
+        "We prioritize durable assemblies, material efficiency, and construction decisions that reduce waste.",
+        "The result is a better-built home with fewer lifecycle compromises."
+      ],
+      "whoFor": [
+        "Clients focused on long-term durability and operating efficiency",
+        "Projects where material strategy matters as much as aesthetics",
+        "Homeowners who want measurable, practical sustainability"
+      ],
+      "whoNotFor": [
+        "Projects optimizing only for short-term first cost",
+        "Teams unwilling to evaluate alternatives during planning",
+        "Scopes with no appetite for performance-based decisions"
+      ],
+      "faq": [
+        {
+          "question": "Do sustainable choices always cost more?",
+          "answer": "Not always. Many choices improve lifecycle value with modest upfront impact."
+        },
+        {
+          "question": "Can sustainable methods fit luxury finishes?",
+          "answer": "Yes. Performance and premium detailing can coexist when specified correctly."
+        },
+        {
+          "question": "How do you reduce waste on site?",
+          "answer": "We use pre-planned material orders, sequencing discipline, and reuse pathways where practical."
+        }
+      ]
+    }
+  },
+  "contactPage": {
+    "headline": "Book a Consultation",
+    "intro": "Share your project goals, target timeline, and location. We will follow up with practical next steps.",
+    "privacyNote": "Your details are used only to respond to your inquiry. We do not sell personal information.",
+    "successMessage": "Thank you. Your request was sent successfully. We will be in touch soon."
+  },
+  "mediaSections": {
+    "homeHero": {
+      "label": "Home Hero",
+      "sources": [
+        "bespoke-cottages-homes/exteriors"
+      ],
+      "maxItems": 1,
+      "pinned": [],
+      "includeVideos": false
+    },
+    "homeFeatured": {
+      "label": "Home Featured Projects",
+      "sources": [
+        "bespoke-cottages-homes/exteriors",
+        "renovations-additions/kitchens",
+        "landscaping-outdoors/decks-patios"
+      ],
+      "maxItems": 9,
+      "pinned": [],
+      "includeVideos": true
+    },
+    "homeProcess": {
+      "label": "Home Process",
+      "sources": [
+        "process-craftsmanship/*"
+      ],
+      "maxItems": 6,
+      "pinned": [],
+      "includeVideos": true
+    },
+    "serviceCustomHomeBuilds": {
+      "label": "Service Gallery: Custom Home Builds",
+      "sources": [
+        "bespoke-cottages-homes/*"
+      ],
+      "maxItems": 12,
+      "pinned": [],
+      "includeVideos": true
+    },
+    "serviceRenovationsExpansions": {
+      "label": "Service Gallery: Renovations & Expansions",
+      "sources": [
+        "renovations-additions/*"
+      ],
+      "maxItems": 12,
+      "pinned": [],
+      "includeVideos": true
+    },
+    "serviceSustainableCraftsmanship": {
+      "label": "Service Gallery: Sustainable Craftsmanship",
+      "sources": [
+        "process-craftsmanship/*",
+        "bespoke-cottages-homes/interiors"
+      ],
+      "maxItems": 12,
+      "pinned": [],
+      "includeVideos": true
+    },
+    "beforeAfterSlider": {
+      "label": "Before/After Slider",
+      "sources": [
+        "renovations-additions/before-after-pairs"
+      ],
+      "maxItems": 8,
+      "pinned": [],
+      "includeVideos": false
+    }
+  },
+  "altOverrides": {}
+}

@@ -1,0 +1,41 @@
+---
+import type { BrandConfig } from "@/lib/types";
+
+const { brand } = Astro.props as { brand: BrandConfig };
+---
+
+<footer class="mt-20 border-t border-ink/10 bg-white/90">
+  <div class="section-shell grid gap-10 py-12 md:grid-cols-2">
+    <div class="space-y-3">
+      <p class="font-display text-xl font-semibold text-ink">{brand.name}</p>
+      <p class="max-w-md text-sm text-slate">{brand.tagline}</p>
+      <p class="text-sm text-slate">Service Area: {brand.serviceArea}</p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2">
+      <div class="space-y-2 text-sm text-slate">
+        <p>
+          <span class="font-semibold text-ink">Phone:</span>
+          <a href={`tel:${brand.phone}`} class="ml-1 underline underline-offset-2">{brand.phone}</a>
+        </p>
+        <p>
+          <span class="font-semibold text-ink">Email:</span>
+          <a href={`mailto:${brand.email}`} class="ml-1 underline underline-offset-2">{brand.email}</a>
+        </p>
+        <p>
+          <span class="font-semibold text-ink">Address:</span>
+          <span class="ml-1">{brand.address}</span>
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm font-semibold text-ink">Social</p>
+        <ul class="mt-2 space-y-2 text-sm text-slate">
+          <li><a href={brand.socials.instagram} class="underline underline-offset-2">Instagram</a></li>
+          <li><a href={brand.socials.facebook} class="underline underline-offset-2">Facebook</a></li>
+          <li><a href={brand.socials.linkedin} class="underline underline-offset-2">LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>

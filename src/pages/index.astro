@@ -1,0 +1,248 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import MediaTile from "@/components/MediaTile.astro";
+import { getDefaultConfig } from "@/lib/config";
+import { MEDIA_INDEX } from "@/lib/mediaIndex";
+import {
+  getHomeFeaturedCategory,
+  resolveAlt,
+  selectSectionAssets
+} from "@/lib/mediaSelect";
+
+const config = getDefaultConfig();
+const heroAsset = selectSectionAssets(MEDIA_INDEX, config.mediaSections.homeHero)[0];
+const featuredAssets = selectSectionAssets(MEDIA_INDEX, config.mediaSections.homeFeatured);
+const processAssets = selectSectionAssets(MEDIA_INDEX, config.mediaSections.homeProcess);
+---
+
+<BaseLayout
+  title={config.seo.defaultTitle}
+  description={config.seo.defaultDescription}
+  config={config}
+  currentPath="/"
+>
+  <section class="section-shell pt-10 md:pt-16">
+    <div class="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-stretch">
+      <div class="space-y-6">
+        <p class="badge">Trusted craft. Clear process. Premium outcomes.</p>
+        <h1 id="home-hero-headline" class="text-4xl font-semibold leading-tight text-ink md:text-5xl">
+          {config.home.hero.headline}
+        </h1>
+        <p id="home-hero-subheadline" class="max-w-xl text-base leading-relaxed text-slate md:text-lg">
+          {config.home.hero.subheadline}
+        </p>
+
+        <div class="flex flex-wrap gap-3">
+          <a id="home-hero-primary-cta" href="/book" class="btn-primary">
+            {config.home.hero.primaryCtaLabel}
+          </a>
+          <a id="home-hero-secondary-cta" href="#featured-projects" class="btn-secondary">
+            {config.home.hero.secondaryCtaLabel}
+          </a>
+        </div>
+
+        <ul id="home-trust-signals" class="flex flex-wrap gap-2" aria-label="Trust signals">
+          {
+            config.home.hero.trustSignals.map((signal) => <li class="badge">{signal}</li>)
+          }
+        </ul>
+      </div>
+
+      <div class="relative overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-panel">
+        <div id="home-hero-media-shell" class="h-full min-h-[22rem]">
+          {
+            heroAsset ? (
+              <MediaTile
+                asset={heroAsset}
+                eager
+                altText={resolveAlt(heroAsset, config.altOverrides)}
+                className="h-full w-full"
+              />
+            ) : (
+              <div class="grid h-full min-h-[22rem] place-items-center bg-sand px-6 text-center text-sm text-slate">
+                Add hero images to
+                <code class="mx-1">src/assets/media/bespoke-cottages-homes/exteriors/</code>
+              </div>
+            )
+          }
+        </div>
+        <div class="media-scrim pointer-events-none" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-shell mt-20">
+    <div class="mb-8 flex items-end justify-between">
+      <div>
+        <h2 class="text-3xl font-semibold text-ink">What We Build</h2>
+        <p class="mt-2 max-w-2xl text-sm text-slate">
+          Focused services designed to move clients from uncertainty to a clear build plan.
+        </p>
+      </div>
+    </div>
+
+    <div id="home-service-cards" class="grid gap-5 md:grid-cols-3">
+      {
+        config.home.services.map((service) => (
+          <article class="surface-card rounded-2xl p-6">
+            <h3 class="text-xl font-semibold text-ink">{service.title}</h3>
+            <p class="mt-3 text-sm leading-relaxed text-slate">{service.blurb}</p>
+            <a
+              href={service.href}
+              class="mt-5 inline-flex text-sm font-semibold text-brand underline underline-offset-4"
+            >
+              View service details
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section id="featured-projects" class="section-shell mt-20">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h2 class="text-3xl font-semibold text-ink">Featured Projects</h2>
+        <p class="mt-2 text-sm text-slate">Filtered by project type. Driven by auto-discovered media.</p>
+      </div>
+
+      <div id="home-featured-tabs" class="flex flex-wrap gap-2" role="tablist" aria-label="Filter projects">
+        <button
+          type="button"
+          data-filter="all"
+          role="tab"
+          aria-selected="true"
+          class="rounded-full border border-brand bg-brand px-4 py-2 text-xs font-semibold text-white"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          data-filter="custom-homes"
+          role="tab"
+          aria-selected="false"
+          class="rounded-full border border-ink/20 bg-white px-4 py-2 text-xs font-semibold text-ink"
+        >
+          Custom Homes
+        </button>
+        <button
+          type="button"
+          data-filter="renovations"
+          role="tab"
+          aria-selected="false"
+          class="rounded-full border border-ink/20 bg-white px-4 py-2 text-xs font-semibold text-ink"
+        >
+          Renovations
+        </button>
+        <button
+          type="button"
+          data-filter="outdoors"
+          role="tab"
+          aria-selected="false"
+          class="rounded-full border border-ink/20 bg-white px-4 py-2 text-xs font-semibold text-ink"
+        >
+          Outdoors
+        </button>
+      </div>
+    </div>
+
+    <div id="home-featured-grid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        featuredAssets.length > 0 ? (
+          featuredAssets.map((asset, index) => (
+            <article
+              data-filter-item
+              data-category={getHomeFeaturedCategory(asset)}
+              class="min-h-[14rem]"
+            >
+              <MediaTile
+                asset={asset}
+                eager={index < 2}
+                altText={resolveAlt(asset, config.altOverrides)}
+                className="h-full"
+              />
+            </article>
+          ))
+        ) : (
+          <p class="rounded-xl border border-dashed border-ink/25 bg-white px-4 py-6 text-sm text-slate">
+            Add project media to the mapped folders and they will appear here automatically.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <section id="process" class="section-shell mt-20">
+    <div class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+      <div>
+        <h2 class="text-3xl font-semibold text-ink">Our Process</h2>
+        <p class="mt-2 text-sm text-slate">
+          A structured approach that reduces surprises and keeps decisions moving.
+        </p>
+        <div id="home-process-steps" class="mt-6 space-y-3">
+          {
+            config.home.processSteps.map((step) => (
+              <article class="surface-card rounded-xl p-4">
+                <h3 class="text-base font-semibold text-ink">{step.title}</h3>
+                <p class="mt-2 text-sm text-slate">{step.description}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+
+      <div id="home-process-media" class="grid gap-4 sm:grid-cols-2">
+        {
+          processAssets.length > 0 ? (
+            processAssets.map((asset) => (
+              <MediaTile asset={asset} altText={resolveAlt(asset, config.altOverrides)} className="min-h-[12rem]" />
+            ))
+          ) : (
+            <p class="rounded-xl border border-dashed border-ink/25 bg-white px-4 py-6 text-sm text-slate sm:col-span-2">
+              Add process images or videos under
+              <code class="mx-1">src/assets/media/process-craftsmanship/</code>.
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section-shell mt-20">
+    <h2 class="text-3xl font-semibold text-ink">Client Feedback</h2>
+    <div id="home-testimonials" class="mt-6 grid gap-4 md:grid-cols-3">
+      {
+        config.home.testimonials.map((item) => (
+          <article class="surface-card rounded-2xl p-6">
+            <p class="text-sm leading-relaxed text-ink">“{item.quote}”</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-wide text-slate">
+              {item.name} · {item.role}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section-shell mt-20 pb-16">
+    <div class="surface-card rounded-2xl p-8 md:flex md:items-center md:justify-between md:gap-8">
+      <div>
+        <h2 id="home-conversion-headline" class="text-3xl font-semibold text-ink">
+          {config.home.conversionBand.headline}
+        </h2>
+        <p id="home-conversion-body" class="mt-2 max-w-xl text-sm text-slate">
+          {config.home.conversionBand.body}
+        </p>
+      </div>
+      <a id="home-conversion-cta" href="/book" class="btn-primary mt-6 md:mt-0">
+        {config.home.conversionBand.ctaLabel}
+      </a>
+    </div>
+  </section>
+
+  <script type="module">
+    import { initHomePage } from "@/scripts/siteRuntime";
+
+    initHomePage();
+  </script>
+</BaseLayout>

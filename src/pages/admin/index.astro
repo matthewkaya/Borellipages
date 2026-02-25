@@ -1,0 +1,198 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Designer Panel | Borrelli Crafters">
+  <section class="space-y-8">
+    <header class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-3xl font-semibold text-ink">Runtime Designer</h1>
+        <p class="mt-1 text-sm text-slate">
+          Edit text content and media mapping. Changes save locally in this browser.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="/admin/settings" class="btn-secondary">Settings</a>
+        <button id="admin-logout" type="button" class="btn-secondary">Logout</button>
+      </div>
+    </header>
+
+    <p id="admin-status" class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700" aria-live="polite">
+      Ready.
+    </p>
+
+    <section class="space-y-4 rounded-2xl border border-ink/10 bg-white p-6">
+      <h2 class="text-2xl font-semibold text-ink">Content Editor</h2>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="text-sm font-medium text-ink">
+          Home hero headline
+          <input id="home-hero-headline" class="field mt-1" type="text" />
+        </label>
+        <label class="text-sm font-medium text-ink">
+          Home conversion headline
+          <input id="home-conversion-headline" class="field mt-1" type="text" />
+        </label>
+      </div>
+
+      <label class="text-sm font-medium text-ink">
+        Home hero subheadline
+        <textarea id="home-hero-subheadline" class="mt-1" rows="3"></textarea>
+      </label>
+
+      <label class="text-sm font-medium text-ink">
+        Home conversion body
+        <textarea id="home-conversion-body" class="mt-1" rows="2"></textarea>
+      </label>
+
+      <label class="text-sm font-medium text-ink">
+        Home conversion CTA label
+        <input id="home-conversion-cta" class="field mt-1" type="text" />
+      </label>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        <label class="text-sm font-medium text-ink">
+          Service Card 1 Title
+          <input id="service-card-0-title" class="field mt-1" type="text" />
+        </label>
+        <label class="text-sm font-medium text-ink">
+          Service Card 2 Title
+          <input id="service-card-1-title" class="field mt-1" type="text" />
+        </label>
+        <label class="text-sm font-medium text-ink">
+          Service Card 3 Title
+          <input id="service-card-2-title" class="field mt-1" type="text" />
+        </label>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        <label class="text-sm font-medium text-ink">
+          Service Card 1 Blurb
+          <textarea id="service-card-0-blurb" class="mt-1" rows="3"></textarea>
+        </label>
+        <label class="text-sm font-medium text-ink">
+          Service Card 2 Blurb
+          <textarea id="service-card-1-blurb" class="mt-1" rows="3"></textarea>
+        </label>
+        <label class="text-sm font-medium text-ink">
+          Service Card 3 Blurb
+          <textarea id="service-card-2-blurb" class="mt-1" rows="3"></textarea>
+        </label>
+      </div>
+
+      <label class="text-sm font-medium text-ink">
+        Testimonials (3 to 6 lines, format: Quote || Name || Role)
+        <textarea id="home-testimonials" class="mt-1" rows="6"></textarea>
+      </label>
+
+      <label class="text-sm font-medium text-ink">
+        Process steps (3 to 5 lines, format: Title || Description)
+        <textarea id="home-process-steps" class="mt-1" rows="5"></textarea>
+      </label>
+
+      <section class="space-y-3 rounded-xl border border-ink/10 bg-slate-50 p-4">
+        <h3 class="text-lg font-semibold text-ink">Custom Home Builds</h3>
+        <label class="text-sm font-medium text-ink">
+          Intro paragraphs (one per line)
+          <textarea id="service-custom-home-builds-intro" class="mt-1" rows="4"></textarea>
+        </label>
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="text-sm font-medium text-ink">
+            Who it&apos;s for (one bullet per line)
+            <textarea id="service-custom-home-builds-who-for" class="mt-1" rows="4"></textarea>
+          </label>
+          <label class="text-sm font-medium text-ink">
+            Who it&apos;s not for (one bullet per line)
+            <textarea id="service-custom-home-builds-who-not-for" class="mt-1" rows="4"></textarea>
+          </label>
+        </div>
+        <label class="text-sm font-medium text-ink">
+          FAQ (one line each, format: Question || Answer)
+          <textarea id="service-custom-home-builds-faq" class="mt-1" rows="4"></textarea>
+        </label>
+      </section>
+
+      <section class="space-y-3 rounded-xl border border-ink/10 bg-slate-50 p-4">
+        <h3 class="text-lg font-semibold text-ink">Renovations & Expansions</h3>
+        <label class="text-sm font-medium text-ink">
+          Intro paragraphs (one per line)
+          <textarea id="service-renovations-expansions-intro" class="mt-1" rows="4"></textarea>
+        </label>
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="text-sm font-medium text-ink">
+            Who it&apos;s for (one bullet per line)
+            <textarea id="service-renovations-expansions-who-for" class="mt-1" rows="4"></textarea>
+          </label>
+          <label class="text-sm font-medium text-ink">
+            Who it&apos;s not for (one bullet per line)
+            <textarea id="service-renovations-expansions-who-not-for" class="mt-1" rows="4"></textarea>
+          </label>
+        </div>
+        <label class="text-sm font-medium text-ink">
+          FAQ (one line each, format: Question || Answer)
+          <textarea id="service-renovations-expansions-faq" class="mt-1" rows="4"></textarea>
+        </label>
+      </section>
+
+      <section class="space-y-3 rounded-xl border border-ink/10 bg-slate-50 p-4">
+        <h3 class="text-lg font-semibold text-ink">Sustainable Craftsmanship</h3>
+        <label class="text-sm font-medium text-ink">
+          Intro paragraphs (one per line)
+          <textarea id="service-sustainable-craftsmanship-intro" class="mt-1" rows="4"></textarea>
+        </label>
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="text-sm font-medium text-ink">
+            Who it&apos;s for (one bullet per line)
+            <textarea id="service-sustainable-craftsmanship-who-for" class="mt-1" rows="4"></textarea>
+          </label>
+          <label class="text-sm font-medium text-ink">
+            Who it&apos;s not for (one bullet per line)
+            <textarea id="service-sustainable-craftsmanship-who-not-for" class="mt-1" rows="4"></textarea>
+          </label>
+        </div>
+        <label class="text-sm font-medium text-ink">
+          FAQ (one line each, format: Question || Answer)
+          <textarea id="service-sustainable-craftsmanship-faq" class="mt-1" rows="4"></textarea>
+        </label>
+      </section>
+
+      <section class="space-y-3 rounded-xl border border-ink/10 bg-slate-50 p-4">
+        <h3 class="text-lg font-semibold text-ink">Contact Page Microcopy</h3>
+        <label class="text-sm font-medium text-ink">
+          Contact headline
+          <input id="contact-headline" class="field mt-1" type="text" />
+        </label>
+        <label class="text-sm font-medium text-ink">
+          Contact intro
+          <textarea id="contact-intro" class="mt-1" rows="3"></textarea>
+        </label>
+        <label class="text-sm font-medium text-ink">
+          Privacy note
+          <textarea id="contact-privacy-note" class="mt-1" rows="2"></textarea>
+        </label>
+      </section>
+    </section>
+
+    <section class="space-y-4 rounded-2xl border border-ink/10 bg-white p-6">
+      <h2 class="text-2xl font-semibold text-ink">Media Manager</h2>
+      <p class="text-sm text-slate">
+        Choose source folders, max items, pinned files, and whether videos are allowed for each section.
+      </p>
+      <div id="media-manager" class="space-y-5"></div>
+    </section>
+
+    <section class="flex flex-wrap items-center gap-2">
+      <button id="admin-save" type="button" class="btn-primary">Save to Local Browser</button>
+      <button id="admin-reset" type="button" class="btn-secondary">Reset to Defaults</button>
+      <button id="admin-export" type="button" class="btn-secondary">Export Configuration</button>
+      <label class="btn-secondary cursor-pointer" for="admin-import">Import Configuration</label>
+      <input id="admin-import" type="file" accept="application/json" class="hidden" />
+    </section>
+  </section>
+
+  <script type="module">
+    import { initAdminDesigner } from "@/scripts/adminDesigner";
+
+    initAdminDesigner();
+  </script>
+</AdminLayout>
