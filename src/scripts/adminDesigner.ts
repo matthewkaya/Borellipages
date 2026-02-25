@@ -22,9 +22,12 @@ const SERVICE_KEYS: ServiceKey[] = [
   "renovations-expansions",
   "sustainable-craftsmanship"
 ];
+const AUTOSAVE_DELAY_MS = 450;
 
 let config: SiteConfig;
 let statusNode: HTMLElement | null = null;
+let autosaveTimer: number | null = null;
+let publishRevision = 0;
 
 function byId<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
@@ -40,6 +43,34 @@ function setStatus(message: string, tone: "ok" | "error" = "ok") {
     tone === "ok"
       ? "rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
       : "rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700";
+}
+
+async function publishConfig(successMessage: string): Promise<boolean> {
+  const revision = ++publishRevision;
+
+  try {
+    await saveRuntimeConfig(config);
+    if (revision === publishRevision) {
+      setStatus(successMessage);
+    }
+    return true;
+  } catch {
+    if (revision === publishRevision) {
+      setStatus("Could not publish configuration globally. Check connection and try again.", "error");
+    }
+    return false;
+  }
+}
+
+function schedulePublish(successMessage: string): void {
+  if (autosaveTimer) {
+    window.clearTimeout(autosaveTimer);
+  }
+
+  setStatus("Saving changes globally...");
+  autosaveTimer = window.setTimeout(() => {
+    void publishConfig(successMessage);
+  }, AUTOSAVE_DELAY_MS);
 }
 
 function lines(input: string): string[] {
@@ -269,10 +300,12 @@ function populateContentForm() {
   if (privacyNote) privacyNote.value = config.contactPage.privacyNote;
 }
 
-function applyContentForm(): boolean {
+function applyContentForm(showErrors = true): boolean {
   const testimonialsRows = parsePipeRows(ensureValue("home-testimonials"), 3);
   if (testimonialsRows.length < 3 || testimonialsRows.length > 6) {
-    setStatus("Testimonials must contain between 3 and 6 items.", "error");
+    if (showErrors) {
+      setStatus("Testimonials must contain between 3 and 6 items.", "error");
+    }
     return false;
   }
 
@@ -284,7 +317,9 @@ function applyContentForm(): boolean {
 
   const processRows = parsePipeRows(ensureValue("home-process-steps"), 2);
   if (processRows.length < 3 || processRows.length > 5) {
-    setStatus("Process steps must contain between 3 and 5 items.", "error");
+    if (showErrors) {
+      setStatus("Process steps must contain between 3 and 5 items.", "error");
+    }
     return false;
   }
 
@@ -328,6 +363,35 @@ function applyContentForm(): boolean {
   return true;
 }
 
+function bindContentAutosave() {
+  const editor = byId<HTMLElement>("content-editor");
+  if (!editor) {
+    return;
+  }
+
+  const fields = Array.from(
+    editor.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea")
+  );
+
+  fields.forEach((field) => {
+    field.addEventListener("input", () => {
+      if (!applyContentForm(false)) {
+        return;
+      }
+
+      schedulePublish("Content changes auto-saved globally.");
+    });
+
+    field.addEventListener("change", () => {
+      if (!applyContentForm(true)) {
+        return;
+      }
+
+      schedulePublish("Content changes auto-saved globally.");
+    });
+  });
+}
+
 function renderPinnedOptions(sectionKey: MediaSectionKey, container: HTMLElement) {
   const section = config.mediaSections[sectionKey];
   const candidates = collectSectionAssets(MEDIA_INDEX, {
@@ -368,6 +432,7 @@ function renderPinnedOptions(sectionKey: MediaSectionKey, container: HTMLElement
       }
 
       renderMediaManager();
+      schedulePublish("Media mapping auto-saved globally.");
     });
 
     const body = document.createElement("div");
@@ -414,10 +479,12 @@ function renderPinnedOptions(sectionKey: MediaSectionKey, container: HTMLElement
         const value = altInput.value.trim();
         if (!value) {
           delete config.altOverrides[asset.id];
+          schedulePublish("Media alt overrides auto-saved globally.");
           return;
         }
 
         config.altOverrides[asset.id] = value;
+        schedulePublish("Media alt overrides auto-saved globally.");
       });
 
       body.append(altLabel, altInput);
@@ -490,6 +557,7 @@ function renderMediaManager() {
         });
 
         renderMediaManager();
+        schedulePublish("Media source folders auto-saved globally.");
       });
 
       const text = document.createElement("span");
@@ -515,6 +583,7 @@ function renderMediaManager() {
     maxInput.value = String(section.maxItems);
     maxInput.addEventListener("input", () => {
       section.maxItems = Number(maxInput.value || 0);
+      schedulePublish("Media limits auto-saved globally.");
     });
 
     const videoWrap = document.createElement("label");
@@ -535,6 +604,7 @@ function renderMediaManager() {
         return true;
       });
       renderMediaManager();
+      schedulePublish("Media video preferences auto-saved globally.");
     });
 
     const videoText = document.createElement("span");
@@ -565,30 +635,20 @@ function renderMediaManager() {
 }
 
 function bindActions() {
-  const saveButton = byId<HTMLButtonElement>("admin-save");
   const resetButton = byId<HTMLButtonElement>("admin-reset");
   const exportButton = byId<HTMLButtonElement>("admin-export");
   const importInput = byId<HTMLInputElement>("admin-import");
   const logoutButton = byId<HTMLButtonElement>("admin-logout");
 
-  saveButton?.addEventListener("click", () => {
-    if (!applyContentForm()) {
-      return;
-    }
-
-    saveRuntimeConfig(config);
-    setStatus("Configuration saved to localStorage.");
-  });
-
-  resetButton?.addEventListener("click", () => {
+  resetButton?.addEventListener("click", async () => {
     config = getDefaultConfig();
     populateContentForm();
     renderMediaManager();
-    setStatus("Designer reset to default shipped configuration.");
+    await publishConfig("Designer reset to default configuration and published globally.");
   });
 
   exportButton?.addEventListener("click", () => {
-    if (!applyContentForm()) {
+    if (!applyContentForm(true)) {
       return;
     }
 
@@ -615,11 +675,10 @@ function bindActions() {
     try {
       const text = await file.text();
       const parsed = JSON.parse(text) as Partial<SiteConfig>;
-      config = mergeConfig(parsed);
+      config = ensurePrefilledConfig(mergeConfig(parsed)).config;
       populateContentForm();
       renderMediaManager();
-      saveRuntimeConfig(config);
-      setStatus("Configuration imported and saved.");
+      await publishConfig("Configuration imported and published globally.");
       importInput.value = "";
     } catch {
       setStatus("Failed to import configuration JSON.", "error");
@@ -639,12 +698,14 @@ export async function initAdminDesigner() {
   const loaded = await loadRuntimeConfig();
   const normalized = ensurePrefilledConfig(loaded);
   config = normalized.config;
-  if (normalized.changed) {
-    saveRuntimeConfig(config);
-    setStatus("Loaded default content for empty fields. You can now edit and save.");
-  }
-
   populateContentForm();
   renderMediaManager();
+  bindContentAutosave();
   bindActions();
+
+  if (normalized.changed) {
+    await publishConfig("Loaded defaults for empty fields and published globally.");
+  } else {
+    setStatus("Ready. Changes auto-save globally.");
+  }
 }

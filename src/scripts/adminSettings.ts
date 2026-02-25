@@ -16,6 +16,7 @@ const HERO_VIDEO_MAX_BYTES = 10 * 1024 * 1024;
 const HERO_VIDEO_STORAGE_KEY = "homeHeroVideo";
 
 let landingPreviewObjectUrl: string | null = null;
+let businessSaveTimer: number | null = null;
 
 function byId<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
@@ -31,6 +32,22 @@ function setFeedback(node: HTMLElement | null, message: string, tone: "ok" | "er
     tone === "ok"
       ? "rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
       : "rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700";
+}
+
+async function persistGlobalConfig(
+  config: SiteConfig,
+  feedback: HTMLElement | null,
+  successMessage: string,
+  errorMessage: string
+): Promise<boolean> {
+  try {
+    await saveRuntimeConfig(config);
+    setFeedback(feedback, successMessage);
+    return true;
+  } catch {
+    setFeedback(feedback, errorMessage, "error");
+    return false;
+  }
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -280,9 +297,7 @@ function bindBusinessForm(config: SiteConfig): void {
     return;
   }
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-
+  const applyBusinessFields = () => {
     config.brand.name = byId<HTMLInputElement>("brand-name")?.value.trim() || config.brand.name;
     config.brand.tagline = byId<HTMLInputElement>("brand-tagline")?.value.trim() || config.brand.tagline;
     config.brand.phone = byId<HTMLInputElement>("brand-phone")?.value.trim() || config.brand.phone;
@@ -301,26 +316,67 @@ function bindBusinessForm(config: SiteConfig): void {
     if (!config.brand.logo.alt.trim()) {
       config.brand.logo.alt = `${config.brand.name} logo`;
     }
+  };
 
-    saveRuntimeConfig(config);
-    setFeedback(feedback, "Business information saved.");
+  const triggerAutoSave = () => {
+    applyBusinessFields();
+    if (businessSaveTimer) {
+      window.clearTimeout(businessSaveTimer);
+    }
+
+    businessSaveTimer = window.setTimeout(() => {
+      void persistGlobalConfig(
+        config,
+        feedback,
+        "Business information auto-saved globally.",
+        "Could not publish business info. Check connection and try again."
+      );
+    }, 400);
+  };
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+  });
+
+  const fieldIds = [
+    "brand-name",
+    "brand-tagline",
+    "brand-phone",
+    "brand-email",
+    "brand-address",
+    "brand-service-area",
+    "brand-instagram",
+    "brand-facebook",
+    "brand-linkedin"
+  ];
+
+  fieldIds.forEach((id) => {
+    const input = byId<HTMLInputElement>(id);
+    if (!input) {
+      return;
+    }
+    input.addEventListener("input", triggerAutoSave);
+    input.addEventListener("change", triggerAutoSave);
   });
 }
 
 function bindLogoForm(config: SiteConfig): void {
   const form = byId<HTMLFormElement>("admin-logo-form");
   const feedback = byId<HTMLElement>("logo-feedback");
+  const fileInput = byId<HTMLInputElement>("logo-upload");
+  const altField = byId<HTMLInputElement>("logo-alt");
   const clearButton = byId<HTMLButtonElement>("logo-clear");
 
-  if (!form || !feedback || !clearButton) {
+  if (!form || !feedback || !clearButton || !fileInput || !altField) {
     return;
   }
 
-  form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", (event) => {
     event.preventDefault();
+  });
 
-    const logoFile = byId<HTMLInputElement>("logo-upload")?.files?.[0];
-    const altInput = byId<HTMLInputElement>("logo-alt")?.value.trim() ?? "";
+  const saveLogo = async (logoFile: File | null, altInputRaw: string): Promise<void> => {
+    const altInput = altInputRaw.trim();
 
     if (logoFile) {
       if (logoFile.size > LOGO_MAX_BYTES) {
@@ -342,45 +398,61 @@ function bindLogoForm(config: SiteConfig): void {
     }
 
     config.brand.logo.alt = altInput || `${config.brand.name} logo`;
-    saveRuntimeConfig(config);
-    renderLogoPreview(config);
-    setFeedback(feedback, "Logo saved.");
-    form.reset();
-
-    const altField = byId<HTMLInputElement>("logo-alt");
-    if (altField) {
+    const ok = await persistGlobalConfig(
+      config,
+      feedback,
+      "Logo auto-saved globally.",
+      "Could not publish logo. Check connection and try again."
+    );
+    if (ok) {
+      renderLogoPreview(config);
       altField.value = config.brand.logo.alt;
     }
+  };
+
+  fileInput.addEventListener("change", async () => {
+    const logoFile = fileInput.files?.[0] ?? null;
+    await saveLogo(logoFile, altField.value);
+    fileInput.value = "";
   });
 
-  clearButton.addEventListener("click", () => {
+  altField.addEventListener("change", async () => {
+    await saveLogo(null, altField.value);
+  });
+
+  clearButton.addEventListener("click", async () => {
     config.brand.logo.src = "";
     config.brand.logo.alt = `${config.brand.name} logo`;
-    saveRuntimeConfig(config);
-    renderLogoPreview(config);
-    const altField = byId<HTMLInputElement>("logo-alt");
-    if (altField) {
+    const ok = await persistGlobalConfig(
+      config,
+      feedback,
+      "Logo cleared globally.",
+      "Could not clear logo globally. Check connection and try again."
+    );
+    if (ok) {
+      renderLogoPreview(config);
       altField.value = config.brand.logo.alt;
     }
-    setFeedback(feedback, "Logo cleared.");
   });
 }
 
 function bindLandingMediaForm(config: SiteConfig): void {
   const form = byId<HTMLFormElement>("admin-landing-media-form");
   const feedback = byId<HTMLElement>("landing-media-feedback");
+  const fileInput = byId<HTMLInputElement>("landing-video-upload");
   const clearButton = byId<HTMLButtonElement>("landing-video-clear");
 
-  if (!form || !feedback || !clearButton) {
+  if (!form || !feedback || !clearButton || !fileInput) {
     return;
   }
 
-  form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", (event) => {
     event.preventDefault();
+  });
 
-    const videoFile = byId<HTMLInputElement>("landing-video-upload")?.files?.[0];
+  fileInput.addEventListener("change", async () => {
+    const videoFile = fileInput.files?.[0];
     if (!videoFile) {
-      setFeedback(feedback, "Choose a video file first.", "error");
       return;
     }
 
@@ -402,10 +474,16 @@ function bindLandingMediaForm(config: SiteConfig): void {
         fileName: videoFile.name
       };
       config.mediaSections.homeHero.includeVideos = true;
-      saveRuntimeConfig(config);
-      await renderLandingVideoPreview(config);
-      setFeedback(feedback, "Hero video saved.");
-      form.reset();
+      const ok = await persistGlobalConfig(
+        config,
+        feedback,
+        "Hero video uploaded and published globally.",
+        "Could not publish hero video. Check connection and try again."
+      );
+      if (ok) {
+        await renderLandingVideoPreview(config);
+        fileInput.value = "";
+      }
     } catch {
       setFeedback(
         feedback,
@@ -426,9 +504,16 @@ function bindLandingMediaForm(config: SiteConfig): void {
     }
 
     config.runtimeAssets.homeHeroVideo = null;
-    saveRuntimeConfig(config);
-    await renderLandingVideoPreview(config);
-    setFeedback(feedback, "Hero video cleared. Auto-discovered media will be used.");
+    const ok = await persistGlobalConfig(
+      config,
+      feedback,
+      "Hero video cleared globally. Auto-discovered media will be used.",
+      "Could not clear hero video globally. Check connection and try again."
+    );
+    if (ok) {
+      await renderLandingVideoPreview(config);
+      fileInput.value = "";
+    }
   });
 }
 
@@ -437,7 +522,11 @@ export async function initAdminSettings(): Promise<void> {
 
   const config = await loadRuntimeConfig();
   if (normalizeSettingsConfig(config)) {
-    saveRuntimeConfig(config);
+    try {
+      await saveRuntimeConfig(config);
+    } catch {
+      // Keep page usable if publish endpoint is temporarily unavailable.
+    }
   }
 
   bindPasswordForm();

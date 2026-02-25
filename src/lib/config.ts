@@ -2,6 +2,7 @@ import defaultSiteConfig from "@/config/defaultSiteConfig.json";
 import type { SiteConfig } from "@/lib/types";
 
 export const CONFIG_STORAGE_KEY = "bc.site.config.v1";
+export const CONFIG_API_ENDPOINT = "/.netlify/functions/site-config";
 
 const BASE_CONFIG = defaultSiteConfig as SiteConfig;
 
@@ -58,14 +59,32 @@ export function mergeConfig(override?: Partial<SiteConfig>): SiteConfig {
   return deepMerge(getDefaultConfig(), override);
 }
 
-function parseConfig(raw: string | null): Partial<SiteConfig> | null {
-  if (!raw) {
+async function fetchPublishedConfig(): Promise<Partial<SiteConfig> | null> {
+  try {
+    const response = await fetch(CONFIG_API_ENDPOINT, { cache: "no-store" });
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as { config?: Partial<SiteConfig> | null };
+    if (!payload || !payload.config) {
+      return null;
+    }
+
+    return payload.config;
+  } catch {
     return null;
   }
+}
 
+async function fetchDefaultConfigFile(): Promise<Partial<SiteConfig> | null> {
   try {
-    const parsed = JSON.parse(raw) as Partial<SiteConfig>;
-    return parsed;
+    const response = await fetch("/site-config.json", { cache: "no-store" });
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as Partial<SiteConfig>;
   } catch {
     return null;
   }
@@ -76,36 +95,47 @@ export async function loadRuntimeConfig(): Promise<SiteConfig> {
     return getDefaultConfig();
   }
 
-  const storedConfig = parseConfig(window.localStorage.getItem(CONFIG_STORAGE_KEY));
-  if (storedConfig) {
-    return mergeConfig(storedConfig);
+  const publishedConfig = await fetchPublishedConfig();
+  if (publishedConfig) {
+    return mergeConfig(publishedConfig);
   }
 
-  try {
-    const response = await fetch("/site-config.json", { cache: "no-store" });
-    if (!response.ok) {
-      return getDefaultConfig();
-    }
-
-    const fileConfig = (await response.json()) as Partial<SiteConfig>;
+  const fileConfig = await fetchDefaultConfigFile();
+  if (fileConfig) {
     return mergeConfig(fileConfig);
-  } catch {
-    return getDefaultConfig();
   }
+
+  return getDefaultConfig();
 }
 
-export function saveRuntimeConfig(config: SiteConfig): void {
+export async function saveRuntimeConfig(config: SiteConfig): Promise<void> {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
+  const response = await fetch(CONFIG_API_ENDPOINT, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ config })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to save runtime config (${response.status}).`);
+  }
 }
 
-export function clearRuntimeConfig(): void {
+export async function clearRuntimeConfig(): Promise<void> {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.removeItem(CONFIG_STORAGE_KEY);
+  const response = await fetch(CONFIG_API_ENDPOINT, {
+    method: "DELETE"
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to clear runtime config (${response.status}).`);
+  }
 }

@@ -8,7 +8,7 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
       <div>
         <h1 class="text-3xl font-semibold text-ink">Runtime Designer</h1>
         <p class="mt-1 text-sm text-slate">
-          Edit text content and media mapping. Changes save locally in this browser.
+          Edit text content and media mapping. Changes auto-save globally and apply site-wide.
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
@@ -21,7 +21,7 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
       Ready.
     </p>
 
-    <section class="space-y-4 rounded-2xl border border-ink/10 bg-white p-6">
+    <section id="content-editor" class="space-y-4 rounded-2xl border border-ink/10 bg-white p-6">
       <h2 class="text-2xl font-semibold text-ink">Content Editor</h2>
 
       <div class="grid gap-4 md:grid-cols-2">
@@ -182,7 +182,6 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
     </section>
 
     <section class="flex flex-wrap items-center gap-2">
-      <button id="admin-save" type="button" class="btn-primary">Save to Local Browser</button>
       <button id="admin-reset" type="button" class="btn-secondary">Reset to Defaults</button>
       <button id="admin-export" type="button" class="btn-secondary">Export Configuration</button>
       <label class="btn-secondary cursor-pointer" for="admin-import">Import Configuration</label>

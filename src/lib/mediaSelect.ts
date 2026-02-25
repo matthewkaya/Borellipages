@@ -130,7 +130,7 @@ export function getHomeFeaturedCategory(asset: MediaAsset): string {
 }
 
 function splitBeforeAfter(fileName: string): { key: string; side: "before" | "after" } | null {
-  const match = fileName.match(/^(.*)_(before|after)\.[^.]+$/i);
+  const match = fileName.match(/^(.*?)[_\-\s](before|after)\.[^.]+$/i);
   if (!match) {
     return null;
   }
@@ -139,6 +139,64 @@ function splitBeforeAfter(fileName: string): { key: string; side: "before" | "af
     key: match[1].toLowerCase(),
     side: match[2].toLowerCase() as "before" | "after"
   };
+}
+
+function normalizedStem(fileName: string): string {
+  return fileName.replace(/\.[^.]+$/i, "");
+}
+
+function loosePairKey(fileName: string): string {
+  return normalizedStem(fileName)
+    .toLowerCase()
+    .replace(/\s+\d+$/, "")
+    .trim();
+}
+
+function buildFallbackPairs(assets: MediaAsset[]): BeforeAfterPair[] {
+  const sorted = [...assets].sort(deterministicSort);
+  const grouped = new Map<string, MediaAsset[]>();
+
+  for (const asset of sorted) {
+    const key = loosePairKey(asset.fileName);
+    const list = grouped.get(key) ?? [];
+    list.push(asset);
+    grouped.set(key, list);
+  }
+
+  const pairs: BeforeAfterPair[] = [];
+  const used = new Set<string>();
+
+  for (const [groupKey, groupAssets] of grouped.entries()) {
+    if (groupAssets.length < 2) {
+      continue;
+    }
+
+    const bucket = [...groupAssets].sort(deterministicSort);
+    for (let index = 0; index + 1 < bucket.length; index += 2) {
+      const before = bucket[index];
+      const after = bucket[index + 1];
+      used.add(before.id);
+      used.add(after.id);
+      pairs.push({
+        key: `${groupKey}-${Math.floor(index / 2) + 1}`,
+        before,
+        after
+      });
+    }
+  }
+
+  const remaining = sorted.filter((asset) => !used.has(asset.id));
+  for (let index = 0; index + 1 < remaining.length; index += 2) {
+    const before = remaining[index];
+    const after = remaining[index + 1];
+    pairs.push({
+      key: `fallback-${Math.floor(index / 2) + 1}`,
+      before,
+      after
+    });
+  }
+
+  return pairs.sort((a, b) => a.key.localeCompare(b.key));
 }
 
 export function buildBeforeAfterPairs(assets: MediaAsset[]): BeforeAfterPair[] {
@@ -168,7 +226,22 @@ export function buildBeforeAfterPairs(assets: MediaAsset[]): BeforeAfterPair[] {
     }
   }
 
-  return pairs.sort((a, b) => a.key.localeCompare(b.key));
+  if (pairs.length > 0) {
+    const pairedIds = new Set<string>();
+    pairs.forEach((pair) => {
+      pairedIds.add(pair.before.id);
+      pairedIds.add(pair.after.id);
+    });
+
+    const leftovers = imageAssets.filter((asset) => !pairedIds.has(asset.id));
+    if (leftovers.length >= 2) {
+      return [...pairs, ...buildFallbackPairs(leftovers)].sort((a, b) => a.key.localeCompare(b.key));
+    }
+
+    return pairs.sort((a, b) => a.key.localeCompare(b.key));
+  }
+
+  return buildFallbackPairs(imageAssets);
 }
 
 export function resolveAlt(asset: MediaAsset, altOverrides: Record<string, string>): string {
