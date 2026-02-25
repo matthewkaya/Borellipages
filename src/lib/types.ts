@@ -105,7 +105,8 @@ export interface SiteConfig {
   mediaSections: Record<MediaSectionKey, MediaSectionConfig>;
   runtimeAssets: {
     homeHeroVideo: {
-      src: string;
+      src?: string;
+      storageKey?: string;
       mimeType: string;
       fileName: string;
     } | null;

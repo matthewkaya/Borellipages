@@ -1,4 +1,9 @@
 import { getDefaultConfig, loadRuntimeConfig, saveRuntimeConfig } from "@/lib/config";
+import {
+  loadRuntimeAssetBlob,
+  removeRuntimeAssetBlob,
+  saveRuntimeAssetBlob
+} from "@/lib/runtimeAssetStore";
 import type { SiteConfig } from "@/lib/types";
 import {
   changePassword,
@@ -8,6 +13,9 @@ import {
 
 const LOGO_MAX_BYTES = 1_000_000;
 const HERO_VIDEO_MAX_BYTES = 10 * 1024 * 1024;
+const HERO_VIDEO_STORAGE_KEY = "homeHeroVideo";
+
+let landingPreviewObjectUrl: string | null = null;
 
 function byId<T extends HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
@@ -137,16 +145,39 @@ function renderLogoPreview(config: SiteConfig): void {
   preview.appendChild(fallback);
 }
 
-function renderLandingVideoPreview(config: SiteConfig): void {
+async function resolveUploadedVideoSource(
+  uploaded: NonNullable<SiteConfig["runtimeAssets"]["homeHeroVideo"]>
+): Promise<string | null> {
+  if (uploaded.storageKey) {
+    try {
+      const blob = await loadRuntimeAssetBlob(uploaded.storageKey);
+      if (blob) {
+        return URL.createObjectURL(blob);
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  const inlineSrc = uploaded.src?.trim();
+  return inlineSrc || null;
+}
+
+async function renderLandingVideoPreview(config: SiteConfig): Promise<void> {
   const preview = byId<HTMLElement>("landing-media-preview");
   if (!preview) {
     return;
   }
 
+  if (landingPreviewObjectUrl) {
+    URL.revokeObjectURL(landingPreviewObjectUrl);
+    landingPreviewObjectUrl = null;
+  }
+
   preview.innerHTML = "";
 
   const uploaded = config.runtimeAssets.homeHeroVideo;
-  if (!uploaded?.src) {
+  if (!uploaded) {
     const empty = document.createElement("p");
     empty.className = "text-sm text-slate";
     empty.textContent = "No uploaded hero video. Homepage will use auto-discovered media.";
@@ -154,8 +185,21 @@ function renderLandingVideoPreview(config: SiteConfig): void {
     return;
   }
 
+  const source = await resolveUploadedVideoSource(uploaded);
+  if (!source) {
+    const empty = document.createElement("p");
+    empty.className = "text-sm text-slate";
+    empty.textContent = "No uploaded hero video. Homepage will use auto-discovered media.";
+    preview.appendChild(empty);
+    return;
+  }
+
+  if (uploaded.storageKey && source.startsWith("blob:")) {
+    landingPreviewObjectUrl = source;
+  }
+
   const video = document.createElement("video");
-  video.src = uploaded.src;
+  video.src = source;
   video.controls = true;
   video.preload = "metadata";
   video.className = "w-full max-w-sm rounded-lg border border-ink/10 bg-black";
@@ -198,7 +242,7 @@ function populateLogoForm(config: SiteConfig): void {
 }
 
 function populateLandingMediaForm(config: SiteConfig): void {
-  renderLandingVideoPreview(config);
+  void renderLandingVideoPreview(config);
 }
 
 function bindPasswordForm() {
@@ -351,26 +395,39 @@ function bindLandingMediaForm(config: SiteConfig): void {
     }
 
     try {
-      const dataUrl = await readFileAsDataUrl(videoFile);
+      await saveRuntimeAssetBlob(HERO_VIDEO_STORAGE_KEY, videoFile);
       config.runtimeAssets.homeHeroVideo = {
-        src: dataUrl,
+        storageKey: HERO_VIDEO_STORAGE_KEY,
         mimeType: videoFile.type,
         fileName: videoFile.name
       };
       config.mediaSections.homeHero.includeVideos = true;
       saveRuntimeConfig(config);
-      renderLandingVideoPreview(config);
+      await renderLandingVideoPreview(config);
       setFeedback(feedback, "Hero video saved.");
       form.reset();
     } catch {
-      setFeedback(feedback, "Could not read video file.", "error");
+      setFeedback(
+        feedback,
+        "Could not store video. Browser storage may be full; try a smaller file or clear old settings.",
+        "error"
+      );
     }
   });
 
-  clearButton.addEventListener("click", () => {
+  clearButton.addEventListener("click", async () => {
+    const storageKey = config.runtimeAssets.homeHeroVideo?.storageKey;
+    if (storageKey) {
+      try {
+        await removeRuntimeAssetBlob(storageKey);
+      } catch {
+        // If deletion fails, proceed with config cleanup.
+      }
+    }
+
     config.runtimeAssets.homeHeroVideo = null;
     saveRuntimeConfig(config);
-    renderLandingVideoPreview(config);
+    await renderLandingVideoPreview(config);
     setFeedback(feedback, "Hero video cleared. Auto-discovered media will be used.");
   });
 }

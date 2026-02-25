@@ -1,11 +1,14 @@
 import { loadRuntimeConfig } from "@/lib/config";
 import { MEDIA_INDEX, type MediaAsset } from "@/lib/mediaIndex";
+import { loadRuntimeAssetBlob } from "@/lib/runtimeAssetStore";
 import {
   getHomeFeaturedCategory,
   resolveAlt,
   selectSectionAssets
 } from "@/lib/mediaSelect";
 import type { MediaSectionKey, ServiceKey, SiteConfig } from "@/lib/types";
+
+let homeHeroObjectUrl: string | null = null;
 
 function byId<T extends HTMLElement>(id: string): T | null {
   const element = document.getElementById(id);
@@ -81,11 +84,43 @@ function renderHeroMedia(asset: MediaAsset | undefined, altOverrides: Record<str
   shell.appendChild(node);
 }
 
-function renderUploadedHeroVideo(config: SiteConfig): boolean {
+async function resolveUploadedHeroVideoSource(
+  uploadedVideo: NonNullable<SiteConfig["runtimeAssets"]["homeHeroVideo"]>
+): Promise<string | null> {
+  if (uploadedVideo.storageKey) {
+    try {
+      const blob = await loadRuntimeAssetBlob(uploadedVideo.storageKey);
+      if (blob) {
+        return URL.createObjectURL(blob);
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  const inlineSrc = uploadedVideo.src?.trim();
+  return inlineSrc || null;
+}
+
+async function renderUploadedHeroVideo(config: SiteConfig): Promise<boolean> {
   const shell = byId<HTMLElement>("home-hero-media-shell");
   const uploadedVideo = config.runtimeAssets?.homeHeroVideo;
-  if (!shell || !uploadedVideo?.src) {
+  if (!shell || !uploadedVideo) {
     return false;
+  }
+
+  if (homeHeroObjectUrl) {
+    URL.revokeObjectURL(homeHeroObjectUrl);
+    homeHeroObjectUrl = null;
+  }
+
+  const source = await resolveUploadedHeroVideoSource(uploadedVideo);
+  if (!source) {
+    return false;
+  }
+
+  if (uploadedVideo.storageKey && source.startsWith("blob:")) {
+    homeHeroObjectUrl = source;
   }
 
   shell.innerHTML = "";
@@ -94,7 +129,7 @@ function renderUploadedHeroVideo(config: SiteConfig): boolean {
   wrapper.className = "h-full w-full";
 
   const video = document.createElement("video");
-  video.src = uploadedVideo.src;
+  video.src = source;
   video.controls = true;
   video.preload = "metadata";
   video.setAttribute("playsinline", "true");
@@ -151,10 +186,12 @@ function wireFeaturedFilter() {
     buttons.forEach((button) => {
       const active = button.dataset.filter === filter;
       button.setAttribute("aria-selected", String(active));
-      button.classList.toggle("bg-brand");
+      button.classList.toggle("bg-brand", active);
+      button.classList.toggle("bg-white", !active);
       button.classList.toggle("text-white", active);
       button.classList.toggle("text-ink", !active);
       button.classList.toggle("border-brand", active);
+      button.classList.toggle("border-ink/20", !active);
     });
 
     const items = Array.from(
@@ -413,7 +450,7 @@ export async function initHomePage(): Promise<void> {
   setText("home-conversion-body", config.home.conversionBand.body);
   setText("home-conversion-cta", config.home.conversionBand.ctaLabel);
 
-  if (!renderUploadedHeroVideo(config)) {
+  if (!(await renderUploadedHeroVideo(config))) {
     const heroMedia = selectSectionAssets(MEDIA_INDEX, config.mediaSections.homeHero)[0];
     renderHeroMedia(heroMedia, config.altOverrides);
   }
