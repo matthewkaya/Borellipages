@@ -61,6 +61,136 @@ function ensureValue(inputId: string): string {
   return byId<HTMLInputElement | HTMLTextAreaElement>(inputId)?.value.trim() ?? "";
 }
 
+function withFallbackText(value: string, fallback: string): { value: string; changed: boolean } {
+  if (value.trim()) {
+    return { value, changed: false };
+  }
+
+  return { value: fallback, changed: true };
+}
+
+function ensurePrefilledConfig(input: SiteConfig): { config: SiteConfig; changed: boolean } {
+  const defaults = getDefaultConfig();
+  let changed = false;
+
+  const heroHeadline = withFallbackText(input.home.hero.headline, defaults.home.hero.headline);
+  input.home.hero.headline = heroHeadline.value;
+  changed = changed || heroHeadline.changed;
+
+  const heroSubheadline = withFallbackText(input.home.hero.subheadline, defaults.home.hero.subheadline);
+  input.home.hero.subheadline = heroSubheadline.value;
+  changed = changed || heroSubheadline.changed;
+
+  const conversionHeadline = withFallbackText(
+    input.home.conversionBand.headline,
+    defaults.home.conversionBand.headline
+  );
+  input.home.conversionBand.headline = conversionHeadline.value;
+  changed = changed || conversionHeadline.changed;
+
+  const conversionBody = withFallbackText(input.home.conversionBand.body, defaults.home.conversionBand.body);
+  input.home.conversionBand.body = conversionBody.value;
+  changed = changed || conversionBody.changed;
+
+  const conversionCta = withFallbackText(
+    input.home.conversionBand.ctaLabel,
+    defaults.home.conversionBand.ctaLabel
+  );
+  input.home.conversionBand.ctaLabel = conversionCta.value;
+  changed = changed || conversionCta.changed;
+
+  input.home.services = defaults.home.services.map((defaultCard, index) => {
+    const existing = input.home.services[index] ?? defaultCard;
+
+    const title = withFallbackText(existing.title ?? "", defaultCard.title);
+    const blurb = withFallbackText(existing.blurb ?? "", defaultCard.blurb);
+    const href = withFallbackText(existing.href ?? "", defaultCard.href);
+    const id = withFallbackText(existing.id ?? "", defaultCard.id);
+
+    changed = changed || title.changed || blurb.changed || href.changed || id.changed;
+
+    return {
+      ...existing,
+      id: id.value,
+      title: title.value,
+      blurb: blurb.value,
+      href: href.value
+    };
+  });
+
+  if (input.home.testimonials.length === 0) {
+    input.home.testimonials = defaults.home.testimonials;
+    changed = true;
+  } else {
+    input.home.testimonials = input.home.testimonials.map((item, index) => {
+      const fallback = defaults.home.testimonials[index] ?? defaults.home.testimonials[0];
+      const quote = withFallbackText(item.quote ?? "", fallback.quote);
+      const name = withFallbackText(item.name ?? "", fallback.name);
+      const role = withFallbackText(item.role ?? "", fallback.role);
+      changed = changed || quote.changed || name.changed || role.changed;
+      return {
+        ...item,
+        quote: quote.value,
+        name: name.value,
+        role: role.value
+      };
+    });
+  }
+
+  if (input.home.processSteps.length === 0) {
+    input.home.processSteps = defaults.home.processSteps;
+    changed = true;
+  } else {
+    input.home.processSteps = input.home.processSteps.map((item, index) => {
+      const fallback = defaults.home.processSteps[index] ?? defaults.home.processSteps[0];
+      const title = withFallbackText(item.title ?? "", fallback.title);
+      const description = withFallbackText(item.description ?? "", fallback.description);
+      changed = changed || title.changed || description.changed;
+      return {
+        ...item,
+        title: title.value,
+        description: description.value
+      };
+    });
+  }
+
+  SERVICE_KEYS.forEach((key) => {
+    const fallback = defaults.services[key];
+    const target = input.services[key];
+
+    if (target.intro.length === 0) {
+      target.intro = fallback.intro;
+      changed = true;
+    }
+    if (target.whoFor.length === 0) {
+      target.whoFor = fallback.whoFor;
+      changed = true;
+    }
+    if (target.whoNotFor.length === 0) {
+      target.whoNotFor = fallback.whoNotFor;
+      changed = true;
+    }
+    if (target.faq.length === 0) {
+      target.faq = fallback.faq;
+      changed = true;
+    }
+  });
+
+  const contactHeadline = withFallbackText(input.contactPage.headline, defaults.contactPage.headline);
+  input.contactPage.headline = contactHeadline.value;
+  changed = changed || contactHeadline.changed;
+
+  const contactIntro = withFallbackText(input.contactPage.intro, defaults.contactPage.intro);
+  input.contactPage.intro = contactIntro.value;
+  changed = changed || contactIntro.changed;
+
+  const privacyNote = withFallbackText(input.contactPage.privacyNote, defaults.contactPage.privacyNote);
+  input.contactPage.privacyNote = privacyNote.value;
+  changed = changed || privacyNote.changed;
+
+  return { config: input, changed };
+}
+
 function sourceSelectionForSection(sectionKey: MediaSectionKey): string[] {
   const fieldset = byId<HTMLElement>(`media-sources-${sectionKey}`);
   if (!fieldset) {
@@ -506,7 +636,13 @@ export async function initAdminDesigner() {
   requireAdminAuth();
 
   statusNode = byId<HTMLElement>("admin-status");
-  config = await loadRuntimeConfig();
+  const loaded = await loadRuntimeConfig();
+  const normalized = ensurePrefilledConfig(loaded);
+  config = normalized.config;
+  if (normalized.changed) {
+    saveRuntimeConfig(config);
+    setStatus("Loaded default content for empty fields. You can now edit and save.");
+  }
 
   populateContentForm();
   renderMediaManager();
