@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   site: "https://www.borrellicrafters.com",
+  trailingSlash: "always",
   integrations: [tailwind()],
   scopedStyleStrategy: "where",
   vite: {

@@ -1,3 +1,9 @@
 [build]
   command = "npm run build"
   publish = "dist"
+
+[[redirects]]
+  from = "/services"
+  to = "/services/"
+  status = 301
+  force = true
