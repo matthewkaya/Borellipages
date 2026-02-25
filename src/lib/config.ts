@@ -1,4 +1,4 @@
-import defaultSiteConfig from "@/content/defaultSiteConfig.json";
+import defaultSiteConfig from "@/config/defaultSiteConfig.json";
 import type { SiteConfig } from "@/lib/types";
 
 export const CONFIG_STORAGE_KEY = "bc.site.config.v1";

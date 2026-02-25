@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const sourcePath = resolve("src/content/defaultSiteConfig.json");
+const sourcePath = resolve("src/config/defaultSiteConfig.json");
 const targetPath = resolve("public/site-config.json");
 
 async function run() {

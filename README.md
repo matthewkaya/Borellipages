@@ -82,7 +82,7 @@ Supported formats:
   - capped by each section's `maxItems`
 
 Default section mappings are defined in:
-- [`defaultSiteConfig.json`](/Users/m.matthewkaya/Documents/Projects/Borelli/src/content/defaultSiteConfig.json)
+- [`defaultSiteConfig.json`](/Users/m.matthewkaya/Documents/Projects/Borelli/src/config/defaultSiteConfig.json)
 
 ## Before/After Pairing
 Before/after slider reads files from:
@@ -125,14 +125,14 @@ Runtime config priority:
 2. `/public/site-config.json`
 
 ## Default Config and Build Sync
-- Source of default config: [`src/content/defaultSiteConfig.json`](/Users/m.matthewkaya/Documents/Projects/Borelli/src/content/defaultSiteConfig.json)
+- Source of default config: [`src/config/defaultSiteConfig.json`](/Users/m.matthewkaya/Documents/Projects/Borelli/src/config/defaultSiteConfig.json)
 - Build sync script: [`scripts/generate-site-config.mjs`](/Users/m.matthewkaya/Documents/Projects/Borelli/scripts/generate-site-config.mjs)
 - Output file: [`public/site-config.json`](/Users/m.matthewkaya/Documents/Projects/Borelli/public/site-config.json)
 
 ## Contact Details Placeholder Notes
 The Wix site response was script-heavy and did not expose reliable phone/email/address in crawlable HTML.
 Placeholders are intentionally set in one file for easy replacement:
-- [`src/content/defaultSiteConfig.json`](/Users/m.matthewkaya/Documents/Projects/Borelli/src/content/defaultSiteConfig.json)
+- [`src/config/defaultSiteConfig.json`](/Users/m.matthewkaya/Documents/Projects/Borelli/src/config/defaultSiteConfig.json)
 
 Social links were populated from discovered page links.
 
