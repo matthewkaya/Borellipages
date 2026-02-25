@@ -86,13 +86,17 @@ const { pairs, altOverrides } = Astro.props as Props;
 
     const update = (nextPercent) => {
       percent = Math.min(100, Math.max(0, nextPercent));
-      afterWrap.style.width = `${percent}%`;
+      afterWrap.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
       handle.style.left = `calc(${percent}% - 1rem)`;
       handle.setAttribute("aria-valuenow", String(Math.round(percent)));
+      handle.setAttribute("aria-valuetext", `${Math.round(percent)} percent after`);
     };
 
     const updateFromX = (clientX) => {
       const rect = slider.getBoundingClientRect();
+      if (rect.width <= 0) {
+        return;
+      }
       const ratio = ((clientX - rect.left) / rect.width) * 100;
       update(ratio);
     };
@@ -110,11 +114,25 @@ const { pairs, altOverrides } = Astro.props as Props;
       updateFromX(event.clientX);
     };
 
-    handle.addEventListener("pointerdown", (event) => {
+    const startDrag = (clientX) => {
       isDragging = true;
-      updateFromX(event.clientX);
+      updateFromX(clientX);
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", stop);
+    };
+
+    handle.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      handle.focus();
+      startDrag(event.clientX);
+    });
+
+    slider.addEventListener("pointerdown", (event) => {
+      if (event.target === handle) {
+        return;
+      }
+      event.preventDefault();
+      startDrag(event.clientX);
     });
 
     handle.addEventListener("keydown", (event) => {
