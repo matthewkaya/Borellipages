@@ -2,6 +2,9 @@
   command = "npm run build"
   publish = "dist"
 
+[build.processing.html]
+  pretty_urls = false
+
 [[redirects]]
   from = "/services"
   to = "/services/"

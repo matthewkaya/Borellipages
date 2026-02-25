@@ -1,6 +1,10 @@
 {
   "brand": {
     "name": "Borrelli Crafters",
+    "logo": {
+      "src": "",
+      "alt": "Borrelli Crafters logo"
+    },
     "tagline": "Custom homes, thoughtful renovations, and precision craft.",
     "phone": "TODO: Add phone from borrellicrafters.com",
     "email": "TODO: Add email from borrellicrafters.com",
@@ -34,19 +38,19 @@
         "id": "custom-home-builds",
         "title": "Custom Home Builds",
         "blurb": "From lot strategy to final handover, built for families who want long-term quality.",
-        "href": "/services/custom-home-builds"
+        "href": "/services/custom-home-builds/"
       },
       {
         "id": "renovations-expansions",
         "title": "Renovations & Expansions",
         "blurb": "Rework key spaces, improve flow, and add square footage without compromising character.",
-        "href": "/services/renovations-expansions"
+        "href": "/services/renovations-expansions/"
       },
       {
         "id": "sustainable-craftsmanship",
         "title": "Sustainable Craftsmanship",
         "blurb": "Material-first decisions and durable detailing that reduce waste and improve long-term performance.",
-        "href": "/services/sustainable-craftsmanship"
+        "href": "/services/sustainable-craftsmanship/"
       }
     ],
     "testimonials": [

@@ -55,6 +55,10 @@ export interface MediaSectionConfig {
 
 export interface BrandConfig {
   name: string;
+  logo: {
+    src: string;
+    alt: string;
+  };
   tagline: string;
   phone: string;
   email: string;

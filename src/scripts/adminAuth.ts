@@ -1,6 +1,7 @@
 const ADMIN_USERNAME = "admin";
 const DEFAULT_PASSWORD_HASH =
   "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1";
+const AUTO_LOGIN_ENABLED = true;
 
 const PASSWORD_HASH_KEY = "bc.admin.passwordHash.v1";
 const SESSION_KEY = "bc.admin.session.v1";
@@ -8,6 +9,34 @@ const SESSION_KEY = "bc.admin.session.v1";
 interface AdminSession {
   username: string;
   loggedInAt: string;
+}
+
+function createSession(): AdminSession {
+  return {
+    username: ADMIN_USERNAME,
+    loggedInAt: new Date().toISOString()
+  };
+}
+
+function ensureSession(): void {
+  if (!AUTO_LOGIN_ENABLED) {
+    return;
+  }
+
+  const raw = window.localStorage.getItem(SESSION_KEY);
+  if (!raw) {
+    window.localStorage.setItem(SESSION_KEY, JSON.stringify(createSession()));
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as AdminSession;
+    if (parsed.username !== ADMIN_USERNAME) {
+      window.localStorage.setItem(SESSION_KEY, JSON.stringify(createSession()));
+    }
+  } catch {
+    window.localStorage.setItem(SESSION_KEY, JSON.stringify(createSession()));
+  }
 }
 
 function ensurePasswordHash(): string {
@@ -34,6 +63,12 @@ export function getAdminUsername(): string {
 }
 
 export function isAuthenticated(): boolean {
+  if (AUTO_LOGIN_ENABLED) {
+    ensurePasswordHash();
+    ensureSession();
+    return true;
+  }
+
   const raw = window.localStorage.getItem(SESSION_KEY);
   if (!raw) {
     return false;
@@ -100,6 +135,12 @@ export async function changePassword(
 }
 
 export function requireAdminAuth(redirectTo = "/admin/login"): void {
+  if (AUTO_LOGIN_ENABLED) {
+    ensurePasswordHash();
+    ensureSession();
+    return;
+  }
+
   if (!isAuthenticated()) {
     window.location.assign(redirectTo);
   }

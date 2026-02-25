@@ -1,5 +1,10 @@
 ---
-const { currentPath = "/" } = Astro.props;
+import type { BrandConfig } from "@/lib/types";
+
+const { currentPath = "/", brand } = Astro.props as {
+  currentPath?: string;
+  brand: BrandConfig;
+};
 
 const links = [
   { href: "/", label: "Home" },
@@ -9,16 +14,25 @@ const links = [
 
 const isActive = (href: string) =>
   href === "/" ? currentPath === "/" : currentPath.startsWith(href);
+
+const logoSrc = brand.logo?.src?.trim() ?? "";
+const logoAlt = brand.logo?.alt?.trim() || `${brand.name} logo`;
 ---
 
 <header class="sticky top-0 z-50 border-b border-ink/10 bg-white/88 backdrop-blur">
   <div class="section-shell flex items-center justify-between py-4">
     <a
       href="/"
-      class="font-display text-xl font-semibold tracking-tight text-ink"
+      class="flex items-center gap-2 font-display text-xl font-semibold tracking-tight text-ink"
       aria-label="Borrelli Crafters home"
     >
-      Borrelli Crafters
+      <img
+        id="header-brand-logo"
+        src={logoSrc || undefined}
+        alt={logoAlt}
+        class={`h-10 w-auto ${logoSrc ? "" : "hidden"}`}
+      />
+      <span id="header-brand-text" class={`${logoSrc ? "hidden" : ""}`}>{brand.name}</span>
     </a>
 
     <nav aria-label="Primary" class="hidden items-center gap-8 md:flex">
@@ -69,9 +83,13 @@ const isActive = (href: string) =>
   </div>
 </header>
 
-<script>
+<script type="module">
+  import { loadRuntimeConfig } from "@/lib/config";
+
   const button = document.getElementById("mobile-menu-button");
   const menu = document.getElementById("mobile-menu");
+  const brandLogo = document.getElementById("header-brand-logo");
+  const brandText = document.getElementById("header-brand-text");
 
   if (button && menu) {
     button.addEventListener("click", () => {
@@ -80,4 +98,27 @@ const isActive = (href: string) =>
       menu.classList.toggle("hidden", expanded);
     });
   }
+
+  loadRuntimeConfig().then((config) => {
+    if (!(brandLogo instanceof HTMLImageElement) || !(brandText instanceof HTMLElement)) {
+      return;
+    }
+
+    const logoSrc = config.brand.logo?.src?.trim() ?? "";
+    const logoAlt = config.brand.logo?.alt?.trim() || `${config.brand.name} logo`;
+
+    brandText.textContent = config.brand.name;
+
+    if (logoSrc) {
+      brandLogo.src = logoSrc;
+      brandLogo.alt = logoAlt;
+      brandLogo.classList.remove("hidden");
+      brandText.classList.add("hidden");
+      return;
+    }
+
+    brandLogo.removeAttribute("src");
+    brandLogo.classList.add("hidden");
+    brandText.classList.remove("hidden");
+  });
 </script>

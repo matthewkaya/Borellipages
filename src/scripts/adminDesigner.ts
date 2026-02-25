@@ -498,7 +498,7 @@ function bindActions() {
 
   logoutButton?.addEventListener("click", () => {
     logout();
-    window.location.assign("/admin/login");
+    window.location.assign("/");
   });
 }
 

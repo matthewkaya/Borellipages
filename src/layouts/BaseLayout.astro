@@ -47,7 +47,7 @@ const ldJson = buildLocalBusinessSchema(config);
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <Header currentPath={currentPath} />
+    <Header currentPath={currentPath} brand={config.brand} />
     <main id="main-content">
       <slot />
     </main>

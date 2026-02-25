@@ -3,7 +3,7 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 ---
 
 <AdminLayout title="Admin Settings | Borrelli Crafters">
-  <section class="mx-auto max-w-2xl space-y-6 rounded-2xl border border-ink/10 bg-white p-8 shadow-soft">
+  <section class="mx-auto max-w-3xl space-y-6 rounded-2xl border border-ink/10 bg-white p-8 shadow-soft">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-3xl font-semibold text-ink">Admin Settings</h1>
       <div class="flex gap-2">
@@ -12,30 +12,106 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
       </div>
     </div>
 
-    <p class="text-sm text-slate">Change the Designer password. The hash is stored in localStorage.</p>
+    <p class="text-sm text-slate">
+      Designer opens directly without a login prompt. Settings below are saved locally in this browser.
+    </p>
 
-    <form id="admin-password-form" class="space-y-4" novalidate>
-      <div>
-        <label for="old-password" class="mb-1 block text-sm font-medium text-ink">Current Password</label>
-        <input id="old-password" type="password" class="field" autocomplete="current-password" required />
-      </div>
+    <section class="space-y-4 rounded-xl border border-ink/10 bg-slate-50 p-5">
+      <h2 class="text-xl font-semibold text-ink">Logo Settings</h2>
 
-      <div>
-        <label for="new-password" class="mb-1 block text-sm font-medium text-ink">New Password</label>
-        <input id="new-password" type="password" class="field" autocomplete="new-password" required />
-      </div>
+      <form id="admin-logo-form" class="space-y-4" novalidate>
+        <div>
+          <label for="logo-src" class="mb-1 block text-sm font-medium text-ink">Logo URL / Path</label>
+          <input
+            id="logo-src"
+            type="text"
+            class="field"
+            placeholder="/images/logo.svg or https://..."
+          />
+        </div>
 
-      <div>
-        <label for="confirm-password" class="mb-1 block text-sm font-medium text-ink">Confirm New Password</label>
-        <input id="confirm-password" type="password" class="field" autocomplete="new-password" required />
-      </div>
+        <div>
+          <label for="logo-alt" class="mb-1 block text-sm font-medium text-ink">Logo Alt Text</label>
+          <input id="logo-alt" type="text" class="field" placeholder="Borrelli Crafters logo" />
+        </div>
 
-      <p id="password-feedback" class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700" aria-live="polite">
-        Ready.
-      </p>
+        <div>
+          <p class="mb-1 text-sm font-medium text-ink">Preview</p>
+          <div id="logo-preview" class="rounded-lg border border-ink/10 bg-white p-3"></div>
+        </div>
 
-      <button type="submit" class="btn-primary">Update Password</button>
-    </form>
+        <p id="logo-feedback" class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700" aria-live="polite">
+          Ready.
+        </p>
+
+        <button type="submit" class="btn-primary">Save Logo</button>
+      </form>
+    </section>
+
+    <section class="space-y-4 rounded-xl border border-ink/10 bg-slate-50 p-5">
+      <h2 class="text-xl font-semibold text-ink">Landing Page Video</h2>
+
+      <form id="admin-landing-media-form" class="space-y-4" novalidate>
+        <div>
+          <label for="landing-hero-video" class="mb-1 block text-sm font-medium text-ink">
+            Select Landing Hero Video
+          </label>
+          <select id="landing-hero-video" class="field"></select>
+        </div>
+
+        <label class="flex items-center gap-2 text-sm text-slate">
+          <input id="landing-include-videos" type="checkbox" />
+          Enable videos in landing hero media selection
+        </label>
+
+        <div>
+          <p class="mb-1 text-sm font-medium text-ink">Preview</p>
+          <div id="landing-media-preview" class="rounded-lg border border-ink/10 bg-white p-3"></div>
+        </div>
+
+        <p
+          id="landing-media-feedback"
+          class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700"
+          aria-live="polite"
+        >
+          Ready.
+        </p>
+
+        <button type="submit" class="btn-primary">Save Landing Media</button>
+      </form>
+    </section>
+
+    <section class="space-y-4 rounded-xl border border-ink/10 bg-slate-50 p-5">
+      <h2 class="text-xl font-semibold text-ink">Password</h2>
+      <p class="text-sm text-slate">Change the Designer password hash stored in localStorage.</p>
+
+      <form id="admin-password-form" class="space-y-4" novalidate>
+        <div>
+          <label for="old-password" class="mb-1 block text-sm font-medium text-ink">Current Password</label>
+          <input id="old-password" type="password" class="field" autocomplete="current-password" required />
+        </div>
+
+        <div>
+          <label for="new-password" class="mb-1 block text-sm font-medium text-ink">New Password</label>
+          <input id="new-password" type="password" class="field" autocomplete="new-password" required />
+        </div>
+
+        <div>
+          <label for="confirm-password" class="mb-1 block text-sm font-medium text-ink">Confirm New Password</label>
+          <input id="confirm-password" type="password" class="field" autocomplete="new-password" required />
+        </div>
+
+        <p
+          id="password-feedback"
+          class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700"
+          aria-live="polite"
+        >
+          Ready.
+        </p>
+
+        <button type="submit" class="btn-primary">Update Password</button>
+      </form>
+    </section>
   </section>
 
   <script type="module">
