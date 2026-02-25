@@ -2,7 +2,7 @@ import { isAuthenticated, login } from "@/scripts/adminAuth";
 
 export function initAdminLogin(): void {
   if (isAuthenticated()) {
-    window.location.assign("/admin");
+    window.location.assign("/admin/");
     return;
   }
 
@@ -26,6 +26,6 @@ export function initAdminLogin(): void {
       return;
     }
 
-    window.location.assign("/admin");
+    window.location.assign("/admin/");
   });
 }

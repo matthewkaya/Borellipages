@@ -261,7 +261,7 @@ export async function initAdminSettings(): Promise<void> {
   if (logoutButton) {
     logoutButton.addEventListener("click", () => {
       logout();
-      window.location.assign("/");
+      window.location.assign("/admin/login/");
     });
   }
 }
