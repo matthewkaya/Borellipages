@@ -272,5 +272,8 @@
       "includeVideos": false
     }
   },
+  "runtimeAssets": {
+    "homeHeroVideo": null
+  },
   "altOverrides": {}
 }

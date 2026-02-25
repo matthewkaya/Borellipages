@@ -103,5 +103,12 @@ export interface SiteConfig {
     successMessage: string;
   };
   mediaSections: Record<MediaSectionKey, MediaSectionConfig>;
+  runtimeAssets: {
+    homeHeroVideo: {
+      src: string;
+      mimeType: string;
+      fileName: string;
+    } | null;
+  };
   altOverrides: Record<string, string>;
 }

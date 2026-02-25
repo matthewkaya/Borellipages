@@ -81,6 +81,31 @@ function renderHeroMedia(asset: MediaAsset | undefined, altOverrides: Record<str
   shell.appendChild(node);
 }
 
+function renderUploadedHeroVideo(config: SiteConfig): boolean {
+  const shell = byId<HTMLElement>("home-hero-media-shell");
+  const uploadedVideo = config.runtimeAssets?.homeHeroVideo;
+  if (!shell || !uploadedVideo?.src) {
+    return false;
+  }
+
+  shell.innerHTML = "";
+
+  const wrapper = document.createElement("article");
+  wrapper.className = "h-full w-full";
+
+  const video = document.createElement("video");
+  video.src = uploadedVideo.src;
+  video.controls = true;
+  video.preload = "metadata";
+  video.setAttribute("playsinline", "true");
+  video.setAttribute("aria-label", uploadedVideo.fileName || "Homepage hero video");
+  video.className = "h-full w-full object-cover";
+
+  wrapper.appendChild(video);
+  shell.appendChild(wrapper);
+  return true;
+}
+
 function renderFeaturedGallery(config: SiteConfig) {
   const container = byId<HTMLElement>("home-featured-grid");
   if (!container) {
@@ -388,8 +413,10 @@ export async function initHomePage(): Promise<void> {
   setText("home-conversion-body", config.home.conversionBand.body);
   setText("home-conversion-cta", config.home.conversionBand.ctaLabel);
 
-  const heroMedia = selectSectionAssets(MEDIA_INDEX, config.mediaSections.homeHero)[0];
-  renderHeroMedia(heroMedia, config.altOverrides);
+  if (!renderUploadedHeroVideo(config)) {
+    const heroMedia = selectSectionAssets(MEDIA_INDEX, config.mediaSections.homeHero)[0];
+    renderHeroMedia(heroMedia, config.altOverrides);
+  }
 }
 
 export async function initServicePage(serviceKey: ServiceKey): Promise<void> {

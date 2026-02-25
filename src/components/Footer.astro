@@ -7,35 +7,81 @@ const { brand } = Astro.props as { brand: BrandConfig };
 <footer class="mt-20 border-t border-ink/10 bg-white/90">
   <div class="section-shell grid gap-10 py-12 md:grid-cols-2">
     <div class="space-y-3">
-      <p class="font-display text-xl font-semibold text-ink">{brand.name}</p>
-      <p class="max-w-md text-sm text-slate">{brand.tagline}</p>
-      <p class="text-sm text-slate">Service Area: {brand.serviceArea}</p>
+      <p id="footer-brand-name" class="font-display text-xl font-semibold text-ink">{brand.name}</p>
+      <p id="footer-brand-tagline" class="max-w-md text-sm text-slate">{brand.tagline}</p>
+      <p class="text-sm text-slate">
+        Service Area:
+        <span id="footer-service-area">{brand.serviceArea}</span>
+      </p>
     </div>
 
     <div class="grid gap-6 sm:grid-cols-2">
       <div class="space-y-2 text-sm text-slate">
         <p>
           <span class="font-semibold text-ink">Phone:</span>
-          <a href={`tel:${brand.phone}`} class="ml-1 underline underline-offset-2">{brand.phone}</a>
+          <a id="footer-phone" href={`tel:${brand.phone}`} class="ml-1 underline underline-offset-2">
+            {brand.phone}
+          </a>
         </p>
         <p>
           <span class="font-semibold text-ink">Email:</span>
-          <a href={`mailto:${brand.email}`} class="ml-1 underline underline-offset-2">{brand.email}</a>
+          <a id="footer-email" href={`mailto:${brand.email}`} class="ml-1 underline underline-offset-2">
+            {brand.email}
+          </a>
         </p>
         <p>
           <span class="font-semibold text-ink">Address:</span>
-          <span class="ml-1">{brand.address}</span>
+          <span id="footer-address" class="ml-1">{brand.address}</span>
         </p>
       </div>
 
       <div>
         <p class="text-sm font-semibold text-ink">Social</p>
         <ul class="mt-2 space-y-2 text-sm text-slate">
-          <li><a href={brand.socials.instagram} class="underline underline-offset-2">Instagram</a></li>
-          <li><a href={brand.socials.facebook} class="underline underline-offset-2">Facebook</a></li>
-          <li><a href={brand.socials.linkedin} class="underline underline-offset-2">LinkedIn</a></li>
+          <li><a id="footer-social-instagram" href={brand.socials.instagram} class="underline underline-offset-2">Instagram</a></li>
+          <li><a id="footer-social-facebook" href={brand.socials.facebook} class="underline underline-offset-2">Facebook</a></li>
+          <li><a id="footer-social-linkedin" href={brand.socials.linkedin} class="underline underline-offset-2">LinkedIn</a></li>
         </ul>
       </div>
     </div>
   </div>
 </footer>
+
+<script>
+  import { loadRuntimeConfig } from "@/lib/config";
+
+  const byId = (id) => document.getElementById(id);
+
+  const setText = (id, value) => {
+    const node = byId(id);
+    if (node) {
+      node.textContent = value;
+    }
+  };
+
+  const setLink = (id, href, text) => {
+    const node = byId(id);
+    if (!(node instanceof HTMLAnchorElement)) {
+      return;
+    }
+
+    node.href = href;
+    node.textContent = text;
+  };
+
+  loadRuntimeConfig().then((config) => {
+    const phone = config.brand.phone.trim();
+    const email = config.brand.email.trim();
+
+    setText("footer-brand-name", config.brand.name);
+    setText("footer-brand-tagline", config.brand.tagline);
+    setText("footer-service-area", config.brand.serviceArea);
+    setText("footer-address", config.brand.address);
+
+    setLink("footer-phone", `tel:${phone}`, phone);
+    setLink("footer-email", `mailto:${email}`, email);
+    setLink("footer-social-instagram", config.brand.socials.instagram, "Instagram");
+    setLink("footer-social-facebook", config.brand.socials.facebook, "Facebook");
+    setLink("footer-social-linkedin", config.brand.socials.linkedin, "LinkedIn");
+  });
+</script>
