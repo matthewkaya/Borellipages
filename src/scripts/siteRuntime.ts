@@ -1,14 +1,11 @@
 import { loadRuntimeConfig } from "@/lib/config";
 import { MEDIA_INDEX, type MediaAsset } from "@/lib/mediaIndex";
-import { loadRuntimeAssetBlob } from "@/lib/runtimeAssetStore";
 import {
   getHomeFeaturedCategory,
   resolveAlt,
   selectSectionAssets
 } from "@/lib/mediaSelect";
 import type { MediaSectionKey, ServiceKey, SiteConfig } from "@/lib/types";
-
-let homeHeroObjectUrl: string | null = null;
 
 function byId<T extends HTMLElement>(id: string): T | null {
   const element = document.getElementById(id);
@@ -87,17 +84,6 @@ function renderHeroMedia(asset: MediaAsset | undefined, altOverrides: Record<str
 async function resolveUploadedHeroVideoSource(
   uploadedVideo: NonNullable<SiteConfig["runtimeAssets"]["homeHeroVideo"]>
 ): Promise<string | null> {
-  if (uploadedVideo.storageKey) {
-    try {
-      const blob = await loadRuntimeAssetBlob(uploadedVideo.storageKey);
-      if (blob) {
-        return URL.createObjectURL(blob);
-      }
-    } catch {
-      return null;
-    }
-  }
-
   const inlineSrc = uploadedVideo.src?.trim();
   return inlineSrc || null;
 }
@@ -109,18 +95,9 @@ async function renderUploadedHeroVideo(config: SiteConfig): Promise<boolean> {
     return false;
   }
 
-  if (homeHeroObjectUrl) {
-    URL.revokeObjectURL(homeHeroObjectUrl);
-    homeHeroObjectUrl = null;
-  }
-
   const source = await resolveUploadedHeroVideoSource(uploadedVideo);
   if (!source) {
     return false;
-  }
-
-  if (uploadedVideo.storageKey && source.startsWith("blob:")) {
-    homeHeroObjectUrl = source;
   }
 
   shell.innerHTML = "";

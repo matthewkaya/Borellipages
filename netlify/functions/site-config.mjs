@@ -1,7 +1,7 @@
 import { getStore } from "@netlify/blobs";
 
 const STORE_NAME = "borrelli-site-config";
-const CONFIG_KEY = "site-config";
+const CONFIG_KEY = "site-config.json";
 
 const json = (statusCode, payload) => ({
   statusCode,
@@ -14,11 +14,29 @@ const json = (statusCode, payload) => ({
 
 const store = getStore(STORE_NAME);
 
+function parseConfigText(raw) {
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return null;
+    }
+
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 export const handler = async (event) => {
   try {
     switch (event.httpMethod) {
       case "GET": {
-        const config = await store.get(CONFIG_KEY, { type: "json" });
+        const raw = await store.get(CONFIG_KEY, { type: "text" });
+        const config = parseConfigText(raw);
         return json(200, { config: config ?? null });
       }
 
@@ -34,7 +52,12 @@ export const handler = async (event) => {
           return json(400, { error: "Invalid config payload." });
         }
 
-        await store.setJSON(CONFIG_KEY, config);
+        await store.set(CONFIG_KEY, JSON.stringify(config, null, 2), {
+          metadata: {
+            contentType: "application/json",
+            updatedAt: new Date().toISOString()
+          }
+        });
         return json(200, { ok: true });
       }
 

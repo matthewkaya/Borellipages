@@ -1,9 +1,4 @@
 import { getDefaultConfig, loadRuntimeConfig, saveRuntimeConfig } from "@/lib/config";
-import {
-  loadRuntimeAssetBlob,
-  removeRuntimeAssetBlob,
-  saveRuntimeAssetBlob
-} from "@/lib/runtimeAssetStore";
 import type { SiteConfig } from "@/lib/types";
 import {
   changePassword,
@@ -13,9 +8,7 @@ import {
 
 const LOGO_MAX_BYTES = 1_000_000;
 const HERO_VIDEO_MAX_BYTES = 10 * 1024 * 1024;
-const HERO_VIDEO_STORAGE_KEY = "homeHeroVideo";
-
-let landingPreviewObjectUrl: string | null = null;
+const HERO_VIDEO_ASSET_ENDPOINT = "/.netlify/functions/site-assets?asset=home-hero-video";
 let businessSaveTimer: number | null = null;
 
 function byId<T extends HTMLElement>(id: string): T | null {
@@ -165,17 +158,6 @@ function renderLogoPreview(config: SiteConfig): void {
 async function resolveUploadedVideoSource(
   uploaded: NonNullable<SiteConfig["runtimeAssets"]["homeHeroVideo"]>
 ): Promise<string | null> {
-  if (uploaded.storageKey) {
-    try {
-      const blob = await loadRuntimeAssetBlob(uploaded.storageKey);
-      if (blob) {
-        return URL.createObjectURL(blob);
-      }
-    } catch {
-      return null;
-    }
-  }
-
   const inlineSrc = uploaded.src?.trim();
   return inlineSrc || null;
 }
@@ -184,11 +166,6 @@ async function renderLandingVideoPreview(config: SiteConfig): Promise<void> {
   const preview = byId<HTMLElement>("landing-media-preview");
   if (!preview) {
     return;
-  }
-
-  if (landingPreviewObjectUrl) {
-    URL.revokeObjectURL(landingPreviewObjectUrl);
-    landingPreviewObjectUrl = null;
   }
 
   preview.innerHTML = "";
@@ -206,13 +183,11 @@ async function renderLandingVideoPreview(config: SiteConfig): Promise<void> {
   if (!source) {
     const empty = document.createElement("p");
     empty.className = "text-sm text-slate";
-    empty.textContent = "No uploaded hero video. Homepage will use auto-discovered media.";
+    empty.textContent = uploaded.storageKey
+      ? "This hero video was saved with an older local-only version. Re-upload to publish globally."
+      : "No uploaded hero video. Homepage will use auto-discovered media.";
     preview.appendChild(empty);
     return;
-  }
-
-  if (uploaded.storageKey && source.startsWith("blob:")) {
-    landingPreviewObjectUrl = source;
   }
 
   const video = document.createElement("video");
@@ -450,6 +425,33 @@ function bindLandingMediaForm(config: SiteConfig): void {
     event.preventDefault();
   });
 
+  const uploadHeroVideo = async (file: File): Promise<string> => {
+    const response = await fetch(HERO_VIDEO_ASSET_ENDPOINT, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type,
+        "X-File-Name": file.name
+      },
+      body: file
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed (${response.status})`);
+    }
+
+    return `${HERO_VIDEO_ASSET_ENDPOINT}&v=${Date.now()}`;
+  };
+
+  const deleteHeroVideo = async (): Promise<void> => {
+    const response = await fetch(HERO_VIDEO_ASSET_ENDPOINT, {
+      method: "DELETE"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Delete failed (${response.status})`);
+    }
+  };
+
   fileInput.addEventListener("change", async () => {
     const videoFile = fileInput.files?.[0];
     if (!videoFile) {
@@ -462,14 +464,14 @@ function bindLandingMediaForm(config: SiteConfig): void {
     }
 
     if (videoFile.size > HERO_VIDEO_MAX_BYTES) {
-      setFeedback(feedback, "Video is too large for browser storage. Keep it under 10MB.", "error");
+      setFeedback(feedback, "Video is too large. Keep it under 10MB.", "error");
       return;
     }
 
     try {
-      await saveRuntimeAssetBlob(HERO_VIDEO_STORAGE_KEY, videoFile);
+      const videoUrl = await uploadHeroVideo(videoFile);
       config.runtimeAssets.homeHeroVideo = {
-        storageKey: HERO_VIDEO_STORAGE_KEY,
+        src: videoUrl,
         mimeType: videoFile.type,
         fileName: videoFile.name
       };
@@ -487,32 +489,32 @@ function bindLandingMediaForm(config: SiteConfig): void {
     } catch {
       setFeedback(
         feedback,
-        "Could not store video. Browser storage may be full; try a smaller file or clear old settings.",
+        "Could not upload hero video to the server. Check connection and try again.",
         "error"
       );
     }
   });
 
   clearButton.addEventListener("click", async () => {
-    const storageKey = config.runtimeAssets.homeHeroVideo?.storageKey;
-    if (storageKey) {
-      try {
-        await removeRuntimeAssetBlob(storageKey);
-      } catch {
-        // If deletion fails, proceed with config cleanup.
+    try {
+      await deleteHeroVideo();
+      config.runtimeAssets.homeHeroVideo = null;
+      const ok = await persistGlobalConfig(
+        config,
+        feedback,
+        "Hero video cleared globally. Auto-discovered media will be used.",
+        "Could not clear hero video globally. Check connection and try again."
+      );
+      if (ok) {
+        await renderLandingVideoPreview(config);
+        fileInput.value = "";
       }
-    }
-
-    config.runtimeAssets.homeHeroVideo = null;
-    const ok = await persistGlobalConfig(
-      config,
-      feedback,
-      "Hero video cleared globally. Auto-discovered media will be used.",
-      "Could not clear hero video globally. Check connection and try again."
-    );
-    if (ok) {
-      await renderLandingVideoPreview(config);
-      fileInput.value = "";
+    } catch {
+      setFeedback(
+        feedback,
+        "Could not remove hero video from the server. Check connection and try again.",
+        "error"
+      );
     }
   });
 }
